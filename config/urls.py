@@ -6,8 +6,12 @@ from drf_spectacular.views import (
     SpectacularRedocView,
 )
 import debug_toolbar
-
+from gifts.v1.router import router as GiftRouter
 from config import settings
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register("gifts", GiftRouter)
 
 # drf-spectacular urls
 drf_spectacular_urlpatterns = [
@@ -31,6 +35,7 @@ debug_toolbar_urlpatterns = [
 
 # main project urls
 urlpatterns = [
+    path("api/", include(router.urls)),
     path("gifts/", include("gifts.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
