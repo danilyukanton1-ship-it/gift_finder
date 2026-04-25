@@ -5,7 +5,7 @@ from accounts.models import SearchHistory
 from accounts.v1.serializers import SearchHistorySerializer
 
 
-@extend_schema(tags=["Account"])
+@extend_schema(tags=["Search History"])
 class SearchHistoryViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "delete"]
     serializer_class = SearchHistorySerializer
