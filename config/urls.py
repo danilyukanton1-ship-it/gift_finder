@@ -8,10 +8,12 @@ from drf_spectacular.views import (
 import debug_toolbar
 from gifts.v1.router import router as GiftRouter
 from config import settings
-from rest_framework.routers import DefaultRouter
+from custom_router import EnhancedAPIRouter
 
-router = DefaultRouter()
-router.register("gifts", GiftRouter)
+router = EnhancedAPIRouter()
+
+router.register("gifts", GiftRouter, basename="gifts")
+
 
 # drf-spectacular urls
 drf_spectacular_urlpatterns = [
