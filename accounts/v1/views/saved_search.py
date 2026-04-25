@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from accounts.models import SavedSearch
-from accounts.v1.serializers.saved_search import SavedSearchSerializer
+from accounts.v1.serializers import SavedSearchSerializer
 
 
 @extend_schema(tags=["Saved Search"])
