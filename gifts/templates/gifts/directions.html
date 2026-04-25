@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Gift directions{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">We found these gift directions for you</h1>
+
+    <div class="row">
+        {% for item in directions_data %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if item.direction.image_url %}
+                        <img src="{{ item.direction.image_url }}" class="card-img-top" alt="{{ item.direction.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.direction.name }}</h5>
+                        <p class="card-text">{{ item.direction.description }}</p>
+
+                        <!-- Показываем количество товаров и примеры -->
+                        <p class="text-muted">
+                            <strong>{{ item.products_count }}</strong> gifts available
+                        </p>
+
+                        {% if item.top_products %}
+                            <div class="mt-2">
+                                <small class="text-muted">For example:</small>
+                                <ul class="list-unstyled">
+                                {% for prod in item.top_products %}
+                                    <li><small>• {{ prod.product.name|truncatechars:40 }}</small></li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'gifts:products' item.direction.id %}" class="btn btn-primary w-100">
+                            See {{ item.products_count }} gifts →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="alert alert-warning">No directions found. Try different answers.</p>
+                <a href="{% url 'gifts:questionnaire' %}" class="btn btn-secondary">Back to questionnaire</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
