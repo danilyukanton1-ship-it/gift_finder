@@ -7,6 +7,7 @@ from drf_spectacular.views import (
 )
 import debug_toolbar
 from gifts.v1.router import router as GiftRouter
+from accounts.v1.router import router as AccountRouter
 from config import settings
 from custom_router import EnhancedAPIRouter
 from gifts.v1.views import AnswerSubmitAPIView
@@ -14,6 +15,11 @@ from gifts.v1.views import AnswerSubmitAPIView
 router = EnhancedAPIRouter()
 
 router.register("gifts", GiftRouter, basename="gifts")
+router.register(
+    "account",
+    AccountRouter,
+    basename="account",
+)
 
 
 # drf-spectacular urls

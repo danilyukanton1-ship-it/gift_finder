@@ -10,6 +10,7 @@ from gifts.services import (
 from gifts.v1.serializers import AnswerSubmitSerializer
 
 
+@extend_schema(tags=["Answer of a user"])
 class AnswerSubmitAPIView(APIView):
     @extend_schema(responses={200: AnswerSubmitSerializer})
     def post(self, request, *args, **kwargs):

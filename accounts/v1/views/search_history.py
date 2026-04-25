@@ -1,0 +1,18 @@
+from drf_spectacular.utils import extend_schema
+from rest_framework import viewsets, permissions
+
+from accounts.models import SearchHistory
+from accounts.v1.serializers import SearchHistorySerializer
+
+
+@extend_schema(tags=["Account"])
+class SearchHistoryViewSet(viewsets.ModelViewSet):
+    http_method_names = ["get", "post", "delete"]
+    serializer_class = SearchHistorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return SearchHistory.objects.filter(user=self.request.user)
