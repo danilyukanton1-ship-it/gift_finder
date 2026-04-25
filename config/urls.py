@@ -9,6 +9,7 @@ import debug_toolbar
 from gifts.v1.router import router as GiftRouter
 from config import settings
 from custom_router import EnhancedAPIRouter
+from gifts.v1.views import AnswerSubmitAPIView
 
 router = EnhancedAPIRouter()
 
@@ -38,6 +39,8 @@ debug_toolbar_urlpatterns = [
 # main project urls
 urlpatterns = [
     path("api/", include(router.urls)),
+    path("api/answers", AnswerSubmitAPIView.as_view()),
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("gifts/", include("gifts.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),

@@ -26,6 +26,6 @@ class ProductSerializer(serializers.ModelSerializer):
             "source",
             "direction",
             "rating",
-            "review_count",
+            "reviews_count",
             "in_stock",
         )
