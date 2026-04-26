@@ -1,0 +1,399 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* Main styles */
+    .tag-selector {
+        background: #f8f9fa;
+        border: 1px solid #e2e2e2;
+        border-radius: 4px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+
+    .question-selector {
+        margin-bottom: 25px;
+        padding: 15px;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .question-selector label {
+        font-weight: bold;
+        color: #447e9b;
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .question-selector select {
+        width: 100%;
+        max-width: 500px;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        background-color: white;
+    }
+
+    /* Tags grid */
+    .tags-grid-inner {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 5px;
+    }
+
+    /* Tag items - default state */
+    .tag-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #212529;  /* чёрный текст */
+        font-weight: 500;
+    }
+
+    .tag-item:hover {
+        background: #e7f3ff;
+        border-color: #79aec8;
+    }
+
+    /* Selected tag items */
+    .tag-item.selected {
+        background: #0d6efd;
+        border-color: #0a58ca;
+        color: white;  /* белый текст на синем */
+    }
+
+    .tag-item.selected:hover {
+        background: #0b5ed7;
+    }
+
+    .tag-item input[type="checkbox"] {
+        margin-right: 10px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    /* Selected tags badges */
+    .selected-tags-info {
+        background: #e7f3ff;
+        border: 1px solid #b8daff;
+        border-radius: 4px;
+        padding: 12px 15px;
+        margin: 15px 0;
+        color: #004085;
+    }
+
+    .selected-tag-badge {
+        background: #0d6efd;
+        color: white;
+        padding: 6px 15px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .selected-tag-badge button {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0 4px;
+        opacity: 0.9;
+        font-weight: bold;
+    }
+
+    .selected-tag-badge button:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    /* Question groups */
+    .question-group {
+        background: white;
+        border: 1px solid #e2e2e2;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .question-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e2e2e2;
+        cursor: pointer;
+    }
+
+    .question-header h3 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .question-header .question-description {
+        color: #6c757d;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .question-header .toggle-icon {
+        float: right;
+        color: #6c757d;
+        font-size: 18px;
+    }
+
+    .tags-grid {
+        display: none;
+        padding: 20px;
+    }
+
+    .question-group.expanded .tags-grid {
+        display: block;
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Mobile adaptation */
+    @media (max-width: 768px) {
+        .tags-grid-inner {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block after_field_sets %}
+{% if original %}
+<div class="tag-selector">
+    <div class="question-selector">
+        <label for="id_tag_question">🔍 Filter by question:</label>
+        <select name="tag_question" id="id_tag_question">
+            <option value="">— All questions —</option>
+            {% for question in questions %}
+                <option value="{{ question.id }}">{{ question.text }}</option>
+            {% endfor %}
+        </select>
+        <div id="loading-spinner" class="loading-spinner" style="display: none;"></div>
+    </div>
+
+    <div class="selected-tags-info" id="selected-tags-info" style="display: none;">
+        <strong>✅ Selected tags:</strong>
+        <div class="selected-tags-list" id="selected-tags-list"></div>
+    </div>
+
+    <div class="tags-container" id="tags-container">
+        {% for question in questions %}
+        <div class="question-group" id="group-{{ question.id }}" data-question-id="{{ question.id }}">
+            <div class="question-header" onclick="toggleGroup({{ question.id }})">
+                <h3>{{ question.text }}</h3>
+                {% if question.description %}
+                    <p class="question-description">{{ question.description }}</p>
+                {% endif %}
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="tags-grid" id="tags-{{ question.id }}">
+                <div class="tags-grid-inner" id="tags-inner-{{ question.id }}">
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        Loading tags...
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+(function($) {
+    let selectedTags = [];
+    let currentQuestionId = null;
+    let tagNames = {};
+
+    // Load selected tags from database
+    {% if original %}
+        {% for tag in original.tags.all %}
+            selectedTags.push({{ tag.id }});
+            tagNames[{{ tag.id }}] = "{{ tag.name }}";
+        {% endfor %}
+    {% endif %}
+
+    function updateSelectedTagsInfo() {
+        const info = $('#selected-tags-info');
+        const list = $('#selected-tags-list');
+
+        if (selectedTags.length === 0) {
+            info.hide();
+            return;
+        }
+
+        list.empty();
+        $.each(selectedTags, function(i, tagId) {
+            const tagName = tagNames[tagId] || 'Tag ' + tagId;
+
+            list.append(`
+                <div class="selected-tag-badge" id="badge-${tagId}">
+                    ${tagName}
+                    <button onclick="removeTag(${tagId})" type="button">×</button>
+                </div>
+            `);
+        });
+        info.show();
+    }
+
+    function loadTagsForQuestion(questionId) {
+        const container = $(`#tags-inner-${questionId}`);
+        const spinner = $('#loading-spinner');
+
+        container.html('<div style="text-align: center; padding: 20px; color: #666;">Loading tags...</div>');
+        spinner.show();
+
+        $.get('/gifts/ajax/get-tags-by-question/', {question_id: questionId})
+            .done(function(data) {
+                container.empty();
+
+                $.each(data.tags, function(id, name) {
+                    tagNames[id] = name;
+
+                    const isSelected = selectedTags.indexOf(parseInt(id)) !== -1;
+                    container.append(`
+                        <div class="tag-item ${isSelected ? 'selected' : ''}" onclick="toggleTag(this, ${id}, '${name}')">
+                            <input type="checkbox"
+                                   name="tag_${id}"
+                                   value="1"
+                                   ${isSelected ? 'checked' : ''}
+                                   style="display: none;">
+                            <span>${name}</span>
+                        </div>
+                    `);
+                });
+
+                if (Object.keys(data.tags).length === 0) {
+                    container.html('<div style="text-align: center; padding: 20px; color: #999;">No tags for this question</div>');
+                }
+
+                updateSelectedTagsInfo();
+            })
+            .always(function() {
+                spinner.hide();
+            });
+    }
+
+    window.toggleTag = function(element, tagId, tagName) {
+        const checkbox = $(element).find('input');
+        const isChecked = !checkbox.prop('checked');
+
+        checkbox.prop('checked', isChecked);
+        $(element).toggleClass('selected');
+
+        if (isChecked) {
+            if (selectedTags.indexOf(tagId) === -1) {
+                selectedTags.push(tagId);
+                tagNames[tagId] = tagName;
+            }
+        } else {
+            selectedTags = selectedTags.filter(id => id !== tagId);
+        }
+
+        updateSelectedTagsInfo();
+    };
+
+    window.removeTag = function(tagId) {
+        selectedTags = selectedTags.filter(id => id !== tagId);
+        $(`input[name="tag_${tagId}"]`).prop('checked', false);
+        $(`input[name="tag_${tagId}"]`).closest('.tag-item').removeClass('selected');
+        $(`#badge-${tagId}`).remove();
+        updateSelectedTagsInfo();
+    };
+
+    window.toggleGroup = function(questionId) {
+        const group = $(`#group-${questionId}`);
+        group.toggleClass('expanded');
+        const icon = group.find('.toggle-icon');
+        icon.text(group.hasClass('expanded') ? '▲' : '▼');
+
+        if (group.hasClass('expanded') && group.find('.tags-grid-inner').children().length <= 1) {
+            loadTagsForQuestion(questionId);
+        }
+    };
+
+    // When question selection changes
+    $('#id_tag_question').on('change', function() {
+        const questionId = $(this).val();
+
+        if (currentQuestionId) {
+            $(`#group-${currentQuestionId}`).removeClass('expanded');
+        }
+
+        if (questionId) {
+            currentQuestionId = questionId;
+            const group = $(`#group-${questionId}`);
+            group.addClass('expanded');
+            group.find('.toggle-icon').text('▲');
+            loadTagsForQuestion(questionId);
+
+            $('html, body').animate({
+                scrollTop: group.offset().top - 50
+            }, 300);
+        }
+    });
+
+    // Load all tags on page load
+    {% for question in questions %}
+        loadTagsForQuestion({{ question.id }});
+    {% endfor %}
+
+    updateSelectedTagsInfo();
+
+    // 🟢 FIXED: Proper form submission with tags
+    $('form').on('submit', function(e) {
+        // Remove old hidden fields
+        $('input[name^="tag_"]').remove();
+
+        // Add hidden fields for each selected tag
+        $.each(selectedTags, function(i, tagId) {
+            $('<input>').attr({
+                type: 'hidden',
+                name: `tag_${tagId}`,
+                value: '1'
+            }).appendTo('form');
+        });
+
+        return true;  // Continue with form submission
+    });
+})(django.jQuery);
+</script>
+{% endif %}
+{% endblock %}

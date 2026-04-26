@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Gift ideas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Gift ideas for you</h1>
+
+    <div class="row">
+        {% for item in products_data %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                {% if item.product_image_url %}
+                <img src="{{ item.product_image_url }}" class="card-img-top" alt="{{ item.product_name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title">{{ item.product_name|truncatechars:50 }}</h6>
+                    <p class="card-text">
+                        <strong>{{ item.product_price }} {{ item.product_currency }}</strong>
+                    </p>
+                    {% if item.product_rating %}
+                    <p class="text-warning small">★ {{ item.product_rating }}/5</p>
+                    {% endif %}
+                    <p class="text-muted small">Match: {{ item.weight_score }}%</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-grid gap-2">
+                        <a href="{{ item.product_url }}" class="btn btn-success" target="_blank">
+                            Buy on {{ item.product_source }}
+                        </a>
+
+                        <!-- ПРОСТАЯ ФОРМА БЕЗ JS -->
+                        <form method="post" action="/gifts/products/{{ item.product_id }}/select">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                Select
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="alert alert-info">No products found in this category.</p>
+            <a href="{% url 'gifts:directions' %}" class="btn btn-secondary">Back to directions</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'gifts:directions' %}" class="btn btn-outline-secondary">← Back to directions</a>
+    </div>
+</div>
+{% endblock %}

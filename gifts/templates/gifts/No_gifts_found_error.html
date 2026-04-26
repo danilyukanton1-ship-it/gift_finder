@@ -1,0 +1,11 @@
+{% extends 'base.html %}
+
+{% block content %}
+
+    <div class="text-center py-5">
+        <h3>😕 No gifts found</h3>
+        <p>Try changing your answers or adding more interests</p>
+        <a href="{% url 'gifts:questionnaire' %}" class="btn btn-primary">Try again</a>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Gift Chooser — Find the perfect gift{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero section -->
+    <div class="text-center py-5">
+        <h1 class="display-4 fw-bold mb-4">
+            🎁 Gifts they'll actually love
+        </h1>
+        <p class="lead text-secondary mb-4">
+            Not sure what to give? Answer 10 quick questions — we'll find the perfect gift ideas for any occasion.
+        </p>
+        <a href="{% url 'gifts:questionnaire' %}" class="btn btn-primary btn-lg px-5 py-3">
+            Start questionnaire →
+        </a>
+    </div>
+
+    <!-- How it works -->
+    <div class="row text-center mt-5 pt-4">
+        <h2 class="text-center mb-5">How it works</h2>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 bg-dark">
+                <div class="card-body">
+                    <div class="display-1 mb-3">📋</div>
+                    <h3>1. Answer questions</h3>
+                    <p class="text-secondary">Tell us about the person — their hobbies, style, budget, and occasion.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 bg-dark">
+                <div class="card-body">
+                    <div class="display-1 mb-3">🎯</div>
+                    <h3>2. Get directions</h3>
+                    <p class="text-secondary">We'll show you gift categories that match your answers perfectly.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 bg-dark">
+                <div class="card-body">
+                    <div class="display-1 mb-3">🛒</div>
+                    <h3>3. Choose a gift</h3>
+                    <p class="text-secondary">Browse products and buy them from your favorite stores.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example directions -->
+    <div class="mt-5 pt-4">
+        <h2 class="text-center mb-4">Popular gift directions</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark text-center">
+                    <div class="card-body">
+                        <div class="display-3 mb-2">📸</div>
+                        <h4>Photography</h4>
+                        <p class="text-secondary">Cameras, albums, accessories</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark text-center">
+                    <div class="card-body">
+                        <div class="display-3 mb-2">🎧</div>
+                        <h4>Music</h4>
+                        <p class="text-secondary">Headphones, vinyl, instruments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark text-center">
+                    <div class="card-body">
+                        <div class="display-3 mb-2">🕯️</div>
+                        <h4>Cozy & Relax</h4>
+                        <p class="text-secondary">Candles, tea sets, bath bombs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why us -->
+    <div class="mt-5 pt-4 text-center">
+        <h2 class="mb-4">Why Gift Chooser?</h2>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="p-3">
+                    <h5>🎯 Personalised</h5>
+                    <p class="small text-secondary">Based on real interests, not just price</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="p-3">
+                    <h5>⚡ Fast</h5>
+                    <p class="small text-secondary">Get gift ideas in under 2 minutes</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="p-3">
+                    <h5>🛍️ Real stores</h5>
+                    <p class="small text-secondary">Buy directly from trusted shops</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="p-3">
+                    <h5>💡 Smart</h5>
+                    <p class="small text-secondary">We learn what works and improve over time</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="text-center mt-5 pt-4 pb-5">
+        <h3 class="mb-3">Ready to find the perfect gift?</h3>
+        <a href="{% url 'gifts:questionnaire' %}" class="btn btn-outline-primary btn-lg px-5">
+            Start now →
+        </a>
+    </div>
+</div>
+{% endblock %}
