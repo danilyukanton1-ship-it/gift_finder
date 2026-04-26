@@ -2,6 +2,7 @@ from .models import Option, Product, Question
 from gifts.selectors import (
     options_get_from_options_ids,
     question_get_by_order,
+    products_all_with_tags
 )
 
 class GiftSearchEngine:
@@ -12,6 +13,7 @@ class GiftSearchEngine:
         self.tags_by_questions = self.tags_get_from_options()
         self.question_order_1 = question_get_by_order(order=1)
         self.question_order_6 = question_get_by_order(order=6)
+        self.all_products = products_all_with_tags()
         self.collected_products = self._collect_products()
         self.directions_grouped = self._group_products_by_direction()
         self._sort_in_directions()
@@ -41,17 +43,15 @@ class GiftSearchEngine:
 
     def _validate_product_by_recipient(self, product):
         """check if product has tags associated with recipient the user have chosen"""
-        product_tags = set(product.tags.filter(question=self.question_order_1))
-        if not (self.tags_by_questions[self.question_order_1] & product_tags):
-            return False
-        return True
+        product_tags = {tag for tag in product.tags.all() if tag.question == self.question_order_1}
+        user_tags = self.tags_by_questions.get(self.question_order_1, set())
+        return bool(user_tags & product_tags)
 
     def _validate_product_by_hobby(self, product):
         """check if product has tags associated with hobby the user have chosen"""
-        product_tags = set(product.tags.filter(question=self.question_order_6))
-        if not (self.tags_by_questions[self.question_order_6] & product_tags):
-            return False
-        return True
+        product_tags = {tag for tag in product.tags.all() if tag.question == self.question_order_6}
+        user_tags = self.tags_by_questions.get(self.question_order_6, set())
+        return bool(user_tags & product_tags)
 
     def _calculate_max_score(self):
         max_score = 0
@@ -62,8 +62,9 @@ class GiftSearchEngine:
     def _calculate_product_score(self, product):
         product_score = 0
         questions = self.tags_by_questions.keys()
+        all_product_tags = list(product.tags.all())
         for question in questions:
-            product_question_tags = set(product.tags.filter(question=question))
+            product_question_tags = {tag for tag in all_product_tags if tag.question == question}
             user_question_tags = self.tags_by_questions[question]
             match = product_question_tags.intersection(user_question_tags)
             score = len(match) * question.priority
