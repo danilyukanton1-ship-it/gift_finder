@@ -1,33 +1,19 @@
 from .models import Option, Product, Question
-
+from gifts.selectors import (
+    tags_get_from_options
+)
 
 class GiftSearchEngine:
 
     def __init__(self, options_ids):
         self.options_ids = options_ids
         self.required_answers = [1, 4, 5, 6, 7, 8, 9, 10]
-        self.tags_by_questions = self.get_tags_from_question()
+        self.tags_by_questions = tags_get_from_options(self.options_ids)
         self.collected_products = self._collect_products()
         self.directions_grouped = self._group_products_by_direction()
         self._sort_in_directions()
         self._prepare_top_products(limit=3)
 
-    def get_tags_from_question(self):
-        """
-        :return: dict of questions and sets of tags from these questions
-        """
-        options = Option.objects.filter(id__in=self.options_ids)
-        tags_from_questions = {}
-
-        for option in options:
-            question = option.question
-            tags = set(option.tags.all())
-            if question in tags_from_questions:
-                tags_from_questions[question] |= tags
-            else:
-                tags_from_questions[question] = tags
-
-        return tags_from_questions
 
     def has_required_answer(self):
         """check if the user answered all the required questions"""
