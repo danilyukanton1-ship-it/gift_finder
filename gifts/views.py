@@ -1,15 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Question, Tag, Direction, Product
-from .services import (
-    get_tags_from_options,
-    find_products_and_group_by_direction,
-    serialize_products_by_direction,
-)
+from .services import GiftSearchEngine, serialize_products_by_direction
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from accounts.models import SearchHistory, ChosenProducts
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
@@ -49,28 +44,35 @@ def direction_view(request):
         history = SearchHistory.objects.create(user=request.user)
         history.options.set(option_ids)
 
-    tags_by_question = get_tags_from_options(option_ids)
+    engine = GiftSearchEngine(option_ids)
+    result = engine.get_result()
 
-    products_by_direction = find_products_and_group_by_direction(tags_by_question)
+    # Преобразуем result в формат, который ожидает сериализатор
+    result_for_serializer = {}
+    for direction, data in result.items():
+        result_for_serializer[direction.id] = {
+            "direction": direction,
+            "products": data["products"],
+            "product_count": data["product_count"],
+            "top_products": data["top_products"],
+        }
 
-    # for template
+    # ✅ Теперь сериализуем
+    serialized_result = serialize_products_by_direction(result_for_serializer)
+    request.session["all_products"] = serialized_result
+
+    # Подготавливаем данные для шаблона (оставляем объекты)
     directions_data = []
-    for dir_id, data in products_by_direction.items():
+    for direction, data in result.items():
         directions_data.append(
             {
-                "direction": data["direction"],
+                "direction": direction,
                 "products_count": data["product_count"],
                 "top_products": data["top_products"],
             }
         )
 
-    # count sorting
     directions_data.sort(key=lambda x: x["products_count"], reverse=True)
-
-    # save serialized
-    serialized = serialize_products_by_direction(products_by_direction)
-
-    request.session["all_products"] = serialized
 
     return render(
         request, "gifts/directions.html", {"directions_data": directions_data}

@@ -88,7 +88,7 @@ class GiftSearchEngine:
         return result_score
 
     def _score_validation(self, product):
-        return self._normalize_score(product) > 45
+        return self._normalize_score(product) > 40
 
     def _collect_products(self):
         collected_products = []

@@ -14,7 +14,7 @@ from gifts.v1.views import AnswerSubmitAPIView
 
 router = EnhancedAPIRouter()
 
-router.register("gifts", GiftRouter, basename="gifts")
+router.register("gifts", GiftRouter, basename="gift")
 router.register(
     "account",
     AccountRouter,
