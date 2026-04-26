@@ -29,7 +29,7 @@ class GiftSearchEngine:
 
         return tags_from_questions
 
-    def _has_required_answer(self):
+    def has_required_answer(self):
         """check if the user answered all the required questions"""
         options = Option.objects.filter(id__in=self.options_ids)
         orders = [option.question.order for option in options]

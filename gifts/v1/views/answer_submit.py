@@ -1,13 +1,9 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from gifts.services import (
-    get_tags_from_options,
-    find_products_and_group_by_direction,
-    serialize_products_by_direction,
-)
+from gifts.services import GiftSearchEngine, serialize_products_by_direction
 from gifts.v1.serializers import AnswerSubmitSerializer
+from rest_framework import status
 
 
 @extend_schema(tags=["Answer of a user"])
@@ -19,9 +15,16 @@ class AnswerSubmitAPIView(APIView):
 
         option_ids = []
         for answer in serializer.validated_data["answers"]:
-            option_ids.append(answer["question_order"])
+            option_ids.extend(answer["selected_options"])
 
-        tags_by_question = get_tags_from_options(option_ids)
-        products_by_direction = find_products_and_group_by_direction(tags_by_question)
-        result = serialize_products_by_direction(products_by_direction)
-        return Response(result)
+        engine = GiftSearchEngine(option_ids)
+        if not engine.has_required_answer():
+            return Response(
+                {"error": "You must answer all required questions"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        result = engine.get_result()
+
+        serialized = serialize_products_by_direction(result)
+
+        return Response(serialized)
