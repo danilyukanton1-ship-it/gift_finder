@@ -1,4 +1,3 @@
-from django_rest.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
