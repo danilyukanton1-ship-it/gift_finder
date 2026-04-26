@@ -1,0 +1,5 @@
+1) ManyToMany code - !!!
+2) How my searching system works clearly
+   (i think its not working well now)
+   file - services.py
+   file - views.py
