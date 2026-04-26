@@ -1,6 +1,7 @@
 from .models import Option, Product, Question
 from gifts.selectors import (
     options_get_from_options_ids,
+    question_get_by_order,
 )
 
 class GiftSearchEngine:
@@ -9,6 +10,8 @@ class GiftSearchEngine:
         self.required_answers = [1, 4, 5, 6, 7, 8, 9, 10]
         self.options = options_get_from_options_ids(options_ids)
         self.tags_by_questions = self.tags_get_from_options()
+        self.question_order_1 = question_get_by_order(order=1)
+        self.question_order_6 = question_get_by_order(order=6)
         self.collected_products = self._collect_products()
         self.directions_grouped = self._group_products_by_direction()
         self._sort_in_directions()
@@ -30,8 +33,7 @@ class GiftSearchEngine:
 
     def has_required_answer(self):
         """check if the user answered all the required questions"""
-        options = Option.objects.filter(id__in=self.options_ids)
-        orders = [option.question.order for option in options]
+        orders = [option.question.order for option in self.options]
         for answer in self.required_answers:
             if answer not in orders:
                 return False
@@ -39,17 +41,15 @@ class GiftSearchEngine:
 
     def _validate_product_by_recipient(self, product):
         """check if product has tags associated with recipient the user have chosen"""
-        question = Question.objects.get(order=1)
-        product_tags = set(product.tags.filter(question=question))
-        if not (self.tags_by_questions[question] & product_tags):
+        product_tags = set(product.tags.filter(question=self.question_order_1))
+        if not (self.tags_by_questions[self.question_order_1] & product_tags):
             return False
         return True
 
     def _validate_product_by_hobby(self, product):
         """check if product has tags associated with hobby the user have chosen"""
-        question = Question.objects.get(order=6)
-        product_tags = set(product.tags.filter(question=question))
-        if not (self.tags_by_questions[question] & product_tags):
+        product_tags = set(product.tags.filter(question=self.question_order_6))
+        if not (self.tags_by_questions[self.question_order_6] & product_tags):
             return False
         return True
 
