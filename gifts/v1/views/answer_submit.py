@@ -16,7 +16,10 @@ class AnswerSubmitAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = AnswerSubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        option_ids = serializer.validated_data["selected_options"]
+
+        option_ids = []
+        for answer in serializer.validated_data["answers"]:
+            option_ids.append(answer["question_order"])
 
         tags_by_question = get_tags_from_options(option_ids)
         products_by_direction = find_products_and_group_by_direction(tags_by_question)

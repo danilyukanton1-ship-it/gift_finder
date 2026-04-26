@@ -1,142 +1,142 @@
 from .models import Option, Product, Question
 
 
-def get_min_matches(user_tag_count):
-    return max(3, user_tag_count // 4)
+class GiftSearchEngine:
 
+    def __init__(self, options_ids):
+        self.options_ids = options_ids
+        self.required_answers = [1, 4, 5, 6, 7, 8, 9, 10]
+        self.tags_by_questions = self.get_tags_from_question()
+        self.collected_products = self._collect_products()
+        self.directions_grouped = self._group_products_by_direction()
+        self._sort_in_directions()
+        self._prepare_top_products(limit=3)
 
-def get_tags_from_options(options_ids):
-    """
-    :param options_ids:
-    :return: dict of questions and sets of tags from these questions
-    """
-    options = Option.objects.filter(id__in=options_ids)
-    tags_from_questions = {}
+    def get_tags_from_question(self):
+        """
+        :return: dict of questions and sets of tags from these questions
+        """
+        options = Option.objects.filter(id__in=self.options_ids)
+        tags_from_questions = {}
 
-    for option in options:
-        question = option.question
-        tags = set(option.tags.all())
+        for option in options:
+            question = option.question
+            tags = set(option.tags.all())
+            if question in tags_from_questions:
+                tags_from_questions[question] |= tags
+            else:
+                tags_from_questions[question] = tags
 
-        if question in tags_from_questions:
-            tags_from_questions[question] |= tags
-        else:
-            tags_from_questions[question] = tags
+        return tags_from_questions
 
-    return tags_from_questions
-
-
-def get_mandatory_questions(tags_from_questions):
-    """
-    :param tags_from_questions:
-    :return: returns mandatory questions depends on if user has chosen 'child' or not
-    """
-    answered_questions = set(q.order for q in tags_from_questions.keys())
-    if 2 in answered_questions and 3 in answered_questions:
-        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    return [1, 4, 5, 6, 7, 8, 9, 10]
-
-
-def product_passes_mandatory_check(product, tags_from_questions, mandatory_list):
-    score = 0
-    max_score = 0
-
-    for order in mandatory_list:
-        question = Question.objects.get(order=order)
-        user_tags = tags_from_questions.get(question, set())
-
-        if not user_tags:
-            continue
-
-        max_score += question.priority
-        product_tags = set(product.tags.filter(question=question))
-        matched_count = len(user_tags & product_tags)
-        user_count = len(user_tags)
-
-        if user_count > 0:
-            score += question.priority * (matched_count / user_count)
-        if question.order == 1 or question.order == 6:
-            if not user_tags & product_tags:
+    def _has_required_answer(self):
+        """check if the user answered all the required questions"""
+        options = Option.objects.filter(id__in=self.options_ids)
+        orders = [option.question.order for option in options]
+        for answer in self.required_answers:
+            if answer not in orders:
                 return False
-    if max_score == 0:
         return True
-    return (score / max_score) * 100 > 45
 
+    def _validate_product_by_recipient(self, product):
+        """check if product has tags associated with recipient the user have chosen"""
+        question = Question.objects.get(order=1)
+        product_tags = set(product.tags.filter(question=question))
+        if not (self.tags_by_questions[question] & product_tags):
+            return False
+        return True
 
-def find_products_and_group_by_direction(tags_by_question):
-    # 1. Определяем обязательные вопросы
-    answered_orders = set(q.order for q in tags_by_question.keys())
-    if 2 in answered_orders and 3 in answered_orders:
-        mandatory_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    else:
-        mandatory_list = [1, 4, 5, 6, 7, 8, 9, 10]
+    def _validate_product_by_hobby(self, product):
+        """check if product has tags associated with hobby the user have chosen"""
+        question = Question.objects.get(order=6)
+        product_tags = set(product.tags.filter(question=question))
+        if not (self.tags_by_questions[question] & product_tags):
+            return False
+        return True
 
-    # 2. Все теги пользователя
-    all_user_tags = set()
-    for tags in tags_by_question.values():
-        all_user_tags.update(tag.name for tag in tags)
+    def _calculate_max_score(self):
+        max_score = 0
+        for question, user_tags in self.tags_by_questions.items():
+            max_score += len(user_tags) * question.priority
+        return max_score
 
-    # 3. Максимальный вес (для сортировки)
-    max_weight = 0
-    for question, user_tags in tags_by_question.items():
-        max_weight += len(user_tags) * question.priority
+    def _calculate_product_score(self, product):
+        product_score = 0
+        questions = self.tags_by_questions.keys()
+        for question in questions:
+            product_question_tags = set(product.tags.filter(question=question))
+            user_question_tags = self.tags_by_questions[question]
+            match = product_question_tags.intersection(user_question_tags)
+            score = len(match) * question.priority
+            product_score += score
+        return product_score
 
-    # 4. Минимальное количество совпадений (зависит от числа тегов)
-    min_matches = get_min_matches(len(all_user_tags))
+    def _get_matched_tags(self, product):
+        all_user_tags = set()
+        for tags in self.tags_by_questions.values():
+            all_user_tags.update(tags)
+        product_tags_names = (tag.name for tag in product.tags.all())
+        matched = all_user_tags.intersection(product_tags_names)
+        return list(matched)
 
-    products_found = []
+    def _normalize_score(self, product):
+        product_score = self._calculate_product_score(product)
+        max_score = self._calculate_max_score()
+        if max_score == 0:
+            return 0
+        result_score = (product_score / max_score) * 100
+        return result_score
 
-    # Первый проход — строгий
-    for product in Product.objects.filter(in_stock=True):
-        if not product_passes_mandatory_check(product, tags_by_question, mandatory_list):
-            continue
+    def _score_validation(self, product):
+        return self._normalize_score(product) > 45
 
-        product_tags = set(tag.name for tag in product.tags.all())
-        matches = all_user_tags & product_tags
-        match_count = len(matches)
+    def _collect_products(self):
+        collected_products = []
+        products = (
+            Product.objects.all().prefetch_related("tags").select_related("direction")
+        )
+        for product in products:
+            if not self._validate_product_by_recipient(product):
+                continue
+            if not self._validate_product_by_hobby(product):
+                continue
+            if not self._score_validation(product):
+                continue
+            collected_products.append(
+                {
+                    "product": product,
+                    "weight_score": self._normalize_score(product),
+                    "matched_tags": self._get_matched_tags(product),
+                }
+            )
 
-        if match_count >= min_matches:
-            weight = 0
-            for question, user_tags in tags_by_question.items():
-                product_question_tags = set(product.tags.filter(question=question))
-                matches_q = user_tags & product_question_tags
-                weight += len(matches_q) * question.priority
+        return collected_products
 
-            weight = (weight / max_weight) * 100 if max_weight > 0 else 0
+    def _group_products_by_direction(self):
+        directions_grouped = {}
+        for product in self.collected_products:
+            direction = product["product"].direction
+            if direction not in directions_grouped:
+                directions_grouped[direction] = {
+                    "direction": direction,
+                    "products": [],
+                    "product_count": 0,
+                    "top_products": [],
+                }
+            directions_grouped[direction]["products"].append(product)
+            directions_grouped[direction]["product_count"] += 1
+        return directions_grouped
 
-            products_found.append({
-                'product': product,
-                'weight': weight,
-                'matches': list(matches)
-            })
+    def _sort_in_directions(self):
+        for data in self.directions_grouped.values():
+            data["products"].sort(key=lambda item: item["weight_score"], reverse=True)
 
-    # group by direction
-    products_by_direction = {}
+    def _prepare_top_products(self, limit=3):
+        for data in self.directions_grouped.values():
+            data["top_products"] = data["products"][:limit]
 
-    for item in products_found:
-        product = item['product']
-        direction = product.direction
-
-        if direction.id not in products_by_direction:
-            products_by_direction[direction.id] = {
-                'direction': direction,
-                'products': [],
-                'product_count': 0,
-                'top_products': []
-            }
-
-        products_by_direction[direction.id]['products'].append({
-            'product': product,
-            'weight_score': item['weight'],
-            'matched_tags': item['matches']
-        })
-        products_by_direction[direction.id]['product_count'] += 1
-
-    # sort
-    for data in products_by_direction.values():
-        data['products'].sort(key=lambda x: x['weight_score'], reverse=True)
-        data['top_products'] = data['products'][:3]
-
-    return products_by_direction
+    def get_result(self):
+        return self.directions_grouped
 
 
 def serialize_products_by_direction(products_by_direction):
@@ -147,41 +147,51 @@ def serialize_products_by_direction(products_by_direction):
     serialized = {}
     for dir_id, data in products_by_direction.items():
         serialized_products = []
-        for product_data in data['products']:
-            serialized_products.append({
-                'product_id': product_data['product'].id,
-                'product_name': product_data['product'].name,
-                'product_price': float(product_data['product'].price),
-                'product_currency': product_data['product'].currency,
-                'product_source': product_data['product'].source,
-                'product_url': product_data['product'].product_url,
-                'product_image_url': product_data['product'].image_url,
-                'product_rating': float(product_data['product'].rating) if product_data['product'].rating else None,
-                'weight_score': product_data['weight_score'],
-                'matched_tags': product_data['matched_tags'],
-            })
+        for product_data in data["products"]:
+            serialized_products.append(
+                {
+                    "product_id": product_data["product"].id,
+                    "product_name": product_data["product"].name,
+                    "product_price": float(product_data["product"].price),
+                    "product_currency": product_data["product"].currency,
+                    "product_source": product_data["product"].source,
+                    "product_url": product_data["product"].product_url,
+                    "product_image_url": product_data["product"].image_url,
+                    "product_rating": (
+                        float(product_data["product"].rating)
+                        if product_data["product"].rating
+                        else None
+                    ),
+                    "weight_score": product_data["weight_score"],
+                }
+            )
 
         serialized_top = []
-        for product_data in data['top_products']:
-            serialized_top.append({
-                'product_id': product_data['product'].id,
-                'product_name': product_data['product'].name,
-                'product_price': float(product_data['product'].price),
-                'product_currency': product_data['product'].currency,
-                'product_source': product_data['product'].source,
-                'product_url': product_data['product'].product_url,
-                'product_image_url': product_data['product'].image_url,
-                'product_rating': float(product_data['product'].rating) if product_data['product'].rating else None,
-                'weight_score': product_data['weight_score'],
-                'matched_tags': product_data['matched_tags'],
-            })
+        for product_data in data["top_products"]:
+            serialized_top.append(
+                {
+                    "product_id": product_data["product"].id,
+                    "product_name": product_data["product"].name,
+                    "product_price": float(product_data["product"].price),
+                    "product_currency": product_data["product"].currency,
+                    "product_source": product_data["product"].source,
+                    "product_url": product_data["product"].product_url,
+                    "product_image_url": product_data["product"].image_url,
+                    "product_rating": (
+                        float(product_data["product"].rating)
+                        if product_data["product"].rating
+                        else None
+                    ),
+                    "weight_score": product_data["weight_score"],
+                }
+            )
 
         serialized[dir_id] = {
-            'direction_id': data['direction'].id,
-            'direction_name': data['direction'].name,
-            'products': serialized_products,
-            'product_count': data['product_count'],
-            'top_products': serialized_top
+            "direction_id": data["direction"].id,
+            "direction_name": data["direction"].name,
+            "products": serialized_products,
+            "product_count": data["product_count"],
+            "top_products": serialized_top,
         }
 
     return serialized
