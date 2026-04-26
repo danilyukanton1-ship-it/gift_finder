@@ -1,18 +1,31 @@
 from .models import Option, Product, Question
 from gifts.selectors import (
-    tags_get_from_options
+    options_get_from_options_ids,
 )
 
 class GiftSearchEngine:
 
     def __init__(self, options_ids):
-        self.options_ids = options_ids
         self.required_answers = [1, 4, 5, 6, 7, 8, 9, 10]
-        self.tags_by_questions = tags_get_from_options(self.options_ids)
+        self.options = options_get_from_options_ids(options_ids)
+        self.tags_by_questions = self.tags_get_from_options()
         self.collected_products = self._collect_products()
         self.directions_grouped = self._group_products_by_direction()
         self._sort_in_directions()
         self._prepare_top_products(limit=3)
+
+    def tags_get_from_options(self):
+        tags_from_options = {}
+
+        for option in self.options:
+            question = option.question
+            tags = set(question.tags.all())
+            if question in tags_from_options:
+                tags_from_options[question] |= tags
+            else:
+                tags_from_options[question] = tags
+
+        return tags_from_options
 
 
     def has_required_answer(self):
