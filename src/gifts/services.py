@@ -1,4 +1,3 @@
-from .models import Option, Product, Question
 from gifts.selectors import (
     options_fetch,
     question_get_by_order,
@@ -6,21 +5,13 @@ from gifts.selectors import (
 )
 
 
-class GiftSearchEngine:
+class UserTagService:
+    def __init__(self, options):
+        self.options = options_fetch(options)
+        self.tags_by_questions = self._build_tags_by_question()
 
-    def __init__(self, options_ids):
-        self.required_answers = [1, 4, 5, 6, 7, 8, 9, 10]
-        self.options = options_fetch(options_ids)
-        self.tags_by_questions = self.tags_get_from_options()
-        self.question_order_1 = question_get_by_order(order=1)
-        self.question_order_6 = question_get_by_order(order=6)
-        self.all_products = products_all_with_tags_and_directions()
-        self.collected_products = self._collect_products()
-        self.directions_grouped = self._group_products_by_direction()
-        self._sort_in_directions()
-        self._prepare_top_products(limit=3)
-
-    def tags_get_from_options(self):
+    def _build_tags_by_question(self):
+        """Build mapping from question to set of tags"""
         tags_from_options = {}
 
         for option in self.options:
@@ -33,88 +24,111 @@ class GiftSearchEngine:
 
         return tags_from_options
 
-    def has_required_answer(self):
-        """check if the user answered all the required questions"""
-        orders = [option.question.order for option in self.options]
-        for answer in self.required_answers:
-            if answer not in orders:
-                return False
-        return True
+    def get_tags_for_questions(self, question):
+        """Get user selected tags for a specific question"""
+        return self.tags_by_questions.get(question, set())
 
-    def _validate_product_by_recipient(self, product_tags):
-        """check if product has tags associated with recipient the user have chosen"""
-        user_tags = self.tags_by_questions.get(self.question_order_1, set())
-        product_tags_filtered = {
-            tag for tag in product_tags if tag.question == self.question_order_1
-        }
-        return bool(user_tags & product_tags_filtered)
+    def get_all_questions(self):
+        """Get all questions that user answered"""
+        return self.tags_by_questions.keys()
 
-    def _validate_product_by_hobby(self, product_tags):
-        """check if product has tags associated with hobby the user have chosen"""
-        user_tags = self.tags_by_questions.get(self.question_order_6, set())
-        product_tags_filtered = {
-            tag for tag in product_tags if tag.question == self.question_order_6
-        }
-        return bool(user_tags & product_tags_filtered)
-
-    def _calculate_max_score(self):
+    def calculate_max_score(self):
+        """Calculate max possible score that product can receive if matching all the tags"""
         max_score = 0
-        for question, user_tags in self.tags_by_questions.items():
-            max_score += len(user_tags) * question.priority
+        for question, tags in self.tags_by_questions.items():
+            max_score += len(tags) * question.priority
         return max_score
 
-    def _calculate_product_score(self, product_tags):
+    def get_all_user_tags(self):
+        """Get all tags selected by user across all questions"""
+        all_tags = set()
+        for tags in self.tags_by_questions.values():
+            all_tags.update(tags)
+        return all_tags
+
+
+class ProductScoreService:
+
+    def __init__(self, user_tags_service):
+        self._user_tag_service = user_tags_service
+
+    def calculate_product_score(self, product_tags):
+        """Calculate product score based on weighted tag matches"""
         product_score = 0
-        questions = self.tags_by_questions.keys()
+        questions = self._user_tag_service.all_questions()
         for question in questions:
             product_question_tags = {
                 tag for tag in product_tags if tag.question == question
             }
-            user_question_tags = self.tags_by_questions[question]
+            user_question_tags = self._user_tag_service.get_tags(question)
             match = product_question_tags.intersection(user_question_tags)
             score = len(match) * question.priority
             product_score += score
         return product_score
 
-    def _get_matched_tags(self, product_tags):
-        all_user_tags = set()
-        for tags in self.tags_by_questions.values():
-            all_user_tags.update(tags)
-        matched = all_user_tags.intersection(product_tags)
-        return [tag.name for tag in matched]
-
-    def _normalize_score(self, product_tags):
-        product_score = self._calculate_product_score(product_tags)
-        max_score = self._calculate_max_score()
+    def calculate_normalized_score(self, product_tags):
+        """Calculate normalized score (0-100) for a product"""
+        product_score = self.calculate_product_score(product_tags)
+        max_score = self._user_tag_service.calculate_max_score()
         if max_score == 0:
             return 0
-        result_score = (product_score / max_score) * 100
-        return result_score
+        return (product_score / max_score) * 100
 
-    def _score_validation(self, product_tags):
-        return self._normalize_score(product_tags) > 40
 
-    def _collect_products(self):
-        collected_products = []
-        for product in self.all_products:
-            product_tags = list(product.tags.all())
-            if not self._validate_product_by_recipient(product_tags):
-                continue
-            if not self._validate_product_by_hobby(product_tags):
-                continue
-            if not self._score_validation(product_tags):
-                continue
-            collected_products.append(
-                {
-                    "product": product,
-                    "weight_score": self._normalize_score(product_tags),
-                    "matched_tags": self._get_matched_tags(product_tags),
-                }
-            )
+class ProductFilterService:
 
-        return collected_products
+    SCORE_NEEDED = 40
 
-    def _group_products_by_direction(self):
+    def __init__(self, user_tags_service, question_order_1, question_order_6):
+        self.user_tags_service = user_tags_service
+        self.question_order_1 = question_order_1
+        self.question_order_6 = question_order_6
+        self.score_calculator = ProductScoreService(user_tags_service)
+
+    def validate_by_recipient(self, product_tags):
+        """Checks if product has tags matching the recipient tags of a user"""
+        user_tags = self.user_tags_service.get_tags(self.question_order_1)
+        product_tags_filtered = {
+            tag for tag in product_tags if tag.question == self.question_order_1
+        }
+        return bool(user_tags & product_tags_filtered)
+
+    def validate_by_hobby(self, product_tags):
+        """Checks if product has tags matching the hobby tags of a user"""
+        user_tags = self.user_tags_service.get_tags(self.question_order_6)
+        product_tags_filtered = {
+            tag for tag in product_tags if tag.question == self.question_order_6
+        }
+        return bool(user_tags & product_tags_filtered)
+
+    def score_validation(self, product_tags):
+        """Checks if product's normalized score matches NEEDED score"""
+        return self.score_calculator.calculate_normalized_score(product_tags) > self.SCORE_NEEDED
+
+    def evaluate_product(self, product_tags):
+        """
+        Checks if product should be kept
+        return: tuple(False or True, normalized score)
+        """
+        if not self.validate_by_recipient(product_tags):
+            return False
+        if not self.validate_by_hobby(product_tags):
+            return False
+        if not self.score_validation(product_tags):
+            return False
+        score = self.score_calculator.calculate_normalized_score(product_tags)
+
+        return True, score
+
+
+class ProductGroupService:
+
+    def __init__(self, collected_products):
+        self.collected_products = collected_products
+        self.directions_grouped = self._group_by_direction()
+
+    def _group_by_direction(self):
+        """Group products by their direction"""
         directions_grouped = {}
         for product in self.collected_products:
             direction = product["product"].direction
@@ -129,15 +143,82 @@ class GiftSearchEngine:
             directions_grouped[direction]["product_count"] += 1
         return directions_grouped
 
-    def _sort_in_directions(self):
+    def sort_by_score_in_directions(self):
+        """Sort products by their score in their directions"""
         for data in self.directions_grouped.values():
             data["products"].sort(key=lambda item: item["weight_score"], reverse=True)
+        return self
 
-    def _prepare_top_products(self, limit=3):
+    def select_top_products(self, limit=3):
+        """Select top (limit=N) products by their score in their directions"""
         for data in self.directions_grouped.values():
             data["top_products"] = data["products"][:limit]
+        return self
+
+    def get_grouped_result(self):
+        """Return products grouped with top selections"""
+        return self.directions_grouped
+
+
+class GiftSearchService:
+
+    REQUIRED_QUESTION_ORDERS = [1, 4, 5, 6, 7, 8, 9, 10]
+
+    def __init__(self, options_ids):
+        self.options = options_fetch(options_ids)
+        self.question_order_1 = question_get_by_order(order=1)
+        self.question_order_6 = question_get_by_order(order=6)
+        self.all_products = products_all_with_tags_and_directions()
+
+        self.user_tags_service = UserTagService(self.options)
+        self.product_filter = ProductFilterService(
+            self.user_tags_service,
+            self.question_order_1,
+            self.question_order_6,
+        )
+
+        self.collected_products = self._collect_products()
+        self.product_grouper = ProductGroupService(self.collected_products)
+        self.product_grouper.sort_by_score_in_directions().select_top_products(limit=3)
+        self.directions_grouped = self.product_grouper.get_grouped_result()
+
+    def has_answered_required(self):
+        """Check if user answered all required questions"""
+        orders = [option.question.order for option in self.options]
+        for answer in self.REQUIRED_QUESTION_ORDERS:
+            if answer not in orders:
+                return False
+        return True
+
+    def _get_matched_tags(self, product_tags):
+        """Get names of tags matching the product_tags"""
+        all_user_tags = set()
+        for tags in self.user_tags_service.tags_by_questions.values():
+            all_user_tags.update(tags)
+        matched_tags = all_user_tags.intersection(product_tags)
+        return [tag.name for tag in matched_tags]
+
+    def _collect_products(self):
+        """Collecting products with all validators, filters, and scoring calculations
+           Main orchestrator def
+        """
+        collected_products = []
+        for product in self.all_products:
+            product_tags = list(product.tags.all())
+            should_keep, score = self.product_filter.evaluate_product(product_tags)
+            if not should_keep:
+                continue
+            collected_products.append(
+                {
+                    "product": product,
+                    "weight_score": score,
+                    "matched_tags": self._get_matched_tags(product_tags),
+                }
+            )
+        return collected_products
 
     def get_result(self):
+        """return final results grouped by direction"""
         return self.directions_grouped
 
 

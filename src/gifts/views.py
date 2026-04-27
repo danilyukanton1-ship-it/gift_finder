@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Question, Tag, Direction, Product
-from .services import GiftSearchEngine, serialize_products_by_direction
+from .services import GiftSearchService, serialize_products_by_direction
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from accounts.models import SearchHistory, ChosenProducts
@@ -44,7 +44,7 @@ def direction_view(request):
         history = SearchHistory.objects.create(user=request.user)
         history.options.set(option_ids)
 
-    engine = GiftSearchEngine(option_ids)
+    engine = GiftSearchService(option_ids)
     result = engine.get_result()
 
     # Преобразуем result в формат, который ожидает сериализатор
