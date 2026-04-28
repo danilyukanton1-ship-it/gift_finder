@@ -23,7 +23,7 @@ class CartAdmin(admin.ModelAdmin):
     ]
     search_fields = ["user"]
     list_filter = ["is_purchased"]
-    ordering = ("-selected_at",)
+    ordering = ("-created_at",)
 
 
 @admin.register(SearchHistory)
