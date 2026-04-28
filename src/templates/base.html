@@ -70,7 +70,9 @@
                             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
                                 <i class="bi bi-person"></i> Profile
                             </a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <form action="{% url 'accounts:logout' %}" method="post">
                                     {% csrf_token %}
@@ -93,14 +95,14 @@
                         </a>
                     </li>
                     {% endif %}
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{% url 'accounts:cart' %}">
                             <i class="bi bi-cart3"></i> Cart
-                            {% if user.is_authenticated %}
                             <span class="cart-badge" id="cart-count">0</span>
-                            {% endif %}
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
