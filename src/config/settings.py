@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import environ
 from django.urls import reverse_lazy
-from django.conf.global_settings import LOGIN_URL
 
 env = environ.Env()
 environ.Env.read_env(env_file=".env")
@@ -119,8 +118,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-LOGIN_URL = reverse_lazy("accounts:login")
-LOGIN_REDIRECT_URL = reverse_lazy("gifts:questionnaire")
+LOGIN_REDIRECT_URL = reverse_lazy("accounts:login")
 LOGOUT_REDIRECT_URL = reverse_lazy("gifts:questionnaire")
 
 
