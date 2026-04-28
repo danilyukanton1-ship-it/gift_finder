@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from gifts.models import Product
+from base.models import BaseModel
 
 
-class ChosenProducts(models.Model):
+class ChosenProducts(BaseModel):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
