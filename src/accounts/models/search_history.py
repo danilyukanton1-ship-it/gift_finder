@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from gifts.models import Option
 
+
 class SearchHistory(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -12,4 +13,3 @@ class SearchHistory(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.created_at.strftime("%Y-%m-%d %H:%M")}'
-

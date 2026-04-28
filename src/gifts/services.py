@@ -103,7 +103,10 @@ class ProductFilterService:
 
     def score_validation(self, product_tags):
         """Checks if product's normalized score matches NEEDED score"""
-        return self.score_calculator.calculate_normalized_score(product_tags) > self.SCORE_NEEDED
+        return (
+            self.score_calculator.calculate_normalized_score(product_tags)
+            > self.SCORE_NEEDED
+        )
 
     def evaluate_product(self, product_tags):
         """
@@ -200,7 +203,7 @@ class GiftSearchService:
 
     def _collect_products(self):
         """Collecting products with all validators, filters, and scoring calculations
-           Main orchestrator def
+        Main orchestrator def
         """
         collected_products = []
         for product in self.all_products:
