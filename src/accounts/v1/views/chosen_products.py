@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions
 
-from accounts.models import ChosenProducts
+from accounts.models import Cart
 from accounts.v1.serializers import ChosenProductsSerializer
 
 
@@ -14,4 +14,4 @@ class ChosenProductsViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return ChosenProducts.objects.filter(user=self.request.user)
+        return Cart.objects.filter(user=self.request.user)

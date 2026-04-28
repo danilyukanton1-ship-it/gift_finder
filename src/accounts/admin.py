@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import SavedSearch, SearchHistory, ChosenProducts
+from .models import SavedSearch, SearchHistory, Cart
 
 
 @admin.register(SavedSearch)
@@ -14,7 +14,7 @@ class SavedSearchAdmin(admin.ModelAdmin):
     ordering = ("-created_at",)
 
 
-@admin.register(ChosenProducts)
+@admin.register(Cart)
 class ChosenProductsAdmin(admin.ModelAdmin):
     list_display = [
         "user",

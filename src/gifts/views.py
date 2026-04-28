@@ -4,7 +4,7 @@ from .models import Question, Tag, Direction, Product
 from .services import GiftSearchService, serialize_products_by_direction
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
-from accounts.models import SearchHistory, ChosenProducts
+from accounts.models import SearchHistory, Cart
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
@@ -115,7 +115,7 @@ def selected_products(request, product_id):
     except Product.DoesNotExist:
         return JsonResponse({"error": "Product does not exist."}, status=404)
     print(f"{product.id} - {product.name}")
-    chosen, created = ChosenProducts.objects.get_or_create(
+    chosen, created = Cart.objects.get_or_create(
         user=request.user,
         product=product,
         defaults={"quantity": 1, "is_purchased": False},

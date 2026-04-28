@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import ChosenProducts, SearchHistory, SavedSearch
+from .models import Cart, SearchHistory, SavedSearch
 
 
 def register(request):
@@ -29,7 +29,7 @@ def profile(request):
 def update_cart(request, item_id):
     if request.method == "POST":
         quantity = int(request.POST.get("quantity", 1))
-        item = ChosenProducts.objects.get(id=item_id, user=request.user)
+        item = Cart.objects.get(id=item_id, user=request.user)
         if quantity > 0:
             item.quantity = quantity
             item.save()
@@ -41,9 +41,7 @@ def update_cart(request, item_id):
 @login_required
 def delete_from_cart(request, item_id):
     if request.method == "POST":
-        deleted, _ = ChosenProducts.objects.filter(
-            id=item_id, user=request.user
-        ).delete()
+        deleted, _ = Cart.objects.filter(id=item_id, user=request.user).delete()
         if deleted:
             messages.success(request, "Item removed from cart.")
         else:
@@ -55,7 +53,7 @@ def delete_from_cart(request, item_id):
 
 @login_required
 def cart(request):
-    cart_items = ChosenProducts.objects.filter(
+    cart_items = Cart.objects.filter(
         user=request.user, is_purchased=False
     ).select_related("product")
 
@@ -72,7 +70,7 @@ def cart(request):
 def profile(request):
     search_history = SearchHistory.objects.filter(user=request.user).count()
     saved_search = SavedSearch.objects.filter(user=request.user).count()
-    chosen_products = ChosenProducts.objects.filter(user=request.user).count()
+    chosen_products = Cart.objects.filter(user=request.user).count()
     context = {
         "search_history": search_history,
         "saved_search": saved_search,

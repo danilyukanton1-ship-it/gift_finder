@@ -4,7 +4,7 @@ from gifts.models import Product
 from base.models import BaseModel
 
 
-class ChosenProducts(BaseModel):
+class Cart(BaseModel):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
