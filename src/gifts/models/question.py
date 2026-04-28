@@ -1,8 +1,9 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from base.models import BaseModel
 
 
-class Question(models.Model):
+class Question(BaseModel):
 
     class Meta:
         verbose_name = "Question"
