@@ -19,7 +19,7 @@ class ProductSerializer(serializers.ModelSerializer):
         )
 
 
-class ChosenProductsSerializer(serializers.ModelSerializer):
+class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ("id", "product", "selected_at", "quantity", "is_purchased", "note")

@@ -68,13 +68,10 @@ def cart(request):
 
 @login_required
 def profile(request):
-    search_history = SearchHistory.objects.filter(user=request.user).count()
-    saved_search = SavedSearch.objects.filter(user=request.user).count()
-    chosen_products = Cart.objects.filter(user=request.user).count()
     context = {
-        "search_history": search_history,
-        "saved_search": saved_search,
-        "chosen_products": chosen_products,
+        "search_history": SearchHistory.objects.filter(user=request.user).count(),
+        "saved_search": SavedSearch.objects.filter(user=request.user).count(),
+        "cart": Cart.objects.filter(user=request.user).count(),
     }
     return render(request, "accounts/profile.html", context)
 

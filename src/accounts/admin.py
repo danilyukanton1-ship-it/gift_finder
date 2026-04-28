@@ -15,7 +15,7 @@ class SavedSearchAdmin(admin.ModelAdmin):
 
 
 @admin.register(Cart)
-class ChosenProductsAdmin(admin.ModelAdmin):
+class CartAdmin(admin.ModelAdmin):
     list_display = [
         "user",
         "product",
