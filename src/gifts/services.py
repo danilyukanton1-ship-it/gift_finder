@@ -148,9 +148,7 @@ class ProductFilterService:
 
 class ProductGroupService:
 
-    def __init__(
-        self, collected_products: List[ProductData]
-    ) -> None:
+    def __init__(self, collected_products: List[ProductData]) -> None:
         self.collected_products = collected_products
         self.directions_grouped = self._group_by_direction()
 
