@@ -1,8 +1,9 @@
-from gifts.models import Question, Tag, Product, Direction
+from gifts.models import Tag, Product, Direction
 from gifts.selectors import (
     options_fetch,
     question_get_by_order,
     products_all_with_tags_and_directions,
+    all_questions,
 )
 from typing import Dict, Set, List, Tuple, TypedDict, Any
 
@@ -25,41 +26,45 @@ class UserTagService:
 
     def __init__(self, options: List[int]) -> None:
         self.options = options_fetch(options)
-        self.tags_by_questions = self._build_tags_by_question()
+        self.tags_by_questions_id = self._build_tags_by_question_id()
+        self.all_questions = all_questions()
 
-    def _build_tags_by_question(self) -> Dict[Question, Set[Tag]]:
+    def _build_tags_by_question_id(self) -> Dict[int, Set[Tag]]:
         """Build mapping from question to set of tags"""
         tags_from_options = {}
 
         for option in self.options:
-            question = option.question
+            question_id = option.question.id
             tags = set(option.tags.all())
-            if question in tags_from_options:
-                tags_from_options[question] |= tags
+            if question_id in tags_from_options:
+                tags_from_options[question_id] |= tags
             else:
-                tags_from_options[question] = tags
+                tags_from_options[question_id] = tags
 
         return tags_from_options
 
-    def get_tags(self, question: Question) -> Set[Tag]:
+    def get_tags(self, question_id: int) -> Set[Tag]:
         """Get user selected tags for a specific question"""
-        return self.tags_by_questions.get(question, set())
+        return self.tags_by_questions_id.get(question_id, set())
 
-    def get_all_questions(self) -> List[Question]:
+    def get_all_questions_ids(self) -> List[int]:
         """Get all questions that user answered"""
-        return list(self.tags_by_questions.keys())
+        return list(self.tags_by_questions_id.keys())
 
     def calculate_max_score(self) -> float:
         """Calculate max possible score that product can receive if matching all the tags"""
         max_score = 0
-        for question, tags in self.tags_by_questions.items():
-            max_score += len(tags) * question.priority
+        questions_by_id = {q.id: q for q in self.all_questions}
+
+        for question_id, tags in self.tags_by_questions_id.items():
+            priority = questions_by_id[question_id].priority
+            max_score += len(tags) * priority
         return max_score
 
     def get_all_user_tags(self) -> Set[Tag]:
         """Get all tags selected by user across all questions"""
         all_tags = set()
-        for tags in self.tags_by_questions.values():
+        for tags in self.tags_by_questions_id.values():
             all_tags.update(tags)
         return all_tags
 
@@ -102,8 +107,8 @@ class ProductFilterService:
     def __init__(
         self,
         user_tags_service: UserTagService,
-        question_order_1: Question,
-        question_order_6: Question,
+        question_order_1: int,
+        question_order_6: int,
     ) -> None:
         self._user_tags_service = user_tags_service
         self.question_order_1 = question_order_1
@@ -151,20 +156,22 @@ class ProductGroupService:
         self.collected_products = collected_products
         self.directions_grouped = self._group_by_direction()
 
-    def _group_by_direction(self) -> Dict[Direction, DirectionData]:
+    def _group_by_direction(self) -> Dict[int, DirectionData]:
         """Group products by their direction"""
         directions_grouped = {}
         for product in self.collected_products:
             direction = product["product"].direction
-            if direction not in directions_grouped:
-                directions_grouped[direction] = {
+            direction_id = direction.id
+            if direction_id not in directions_grouped:
+                directions_grouped[direction_id] = {
+                    "direction_id": direction_id,
                     "direction": direction,
                     "products": [],
                     "product_count": 0,
                     "top_products": [],
                 }
-            directions_grouped[direction]["products"].append(product)
-            directions_grouped[direction]["product_count"] += 1
+            directions_grouped[direction_id]["products"].append(product)
+            directions_grouped[direction_id]["product_count"] += 1
         return directions_grouped
 
     def sort_by_score_in_directions(self) -> "ProductGroupService":
@@ -181,7 +188,7 @@ class ProductGroupService:
             data["top_products"] = data["products"][:limit]
         return self
 
-    def get_grouped_result(self) -> Dict[Direction, DirectionData]:
+    def get_grouped_result(self) -> Dict[int, DirectionData]:
         """Return products grouped with top selections"""
         return self.directions_grouped
 
@@ -240,13 +247,13 @@ class GiftSearchService:
             )
         return collected_products
 
-    def get_result(self) -> Dict[Direction, DirectionData]:
+    def get_result(self) -> Dict[int, DirectionData]:
         """return final results grouped by direction"""
         return self.directions_grouped
 
 
 def serialize_products_by_direction(
-    products_by_direction: Dict[Direction, DirectionData],
+    products_by_direction: Dict[int, DirectionData],
 ) -> Dict[int, Dict[str, Any]]:
     """
     :param products_by_direction:

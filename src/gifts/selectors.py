@@ -10,7 +10,8 @@ def options_fetch(options_ids):
 
 
 def question_get_by_order(order):
-    return Question.objects.filter(order=order).first()
+    question = Question.objects.get(order=order)
+    return question.id
 
 
 def products_all_with_tags_and_directions():
@@ -19,3 +20,6 @@ def products_all_with_tags_and_directions():
         .select_related("direction")
         .all()
     )
+
+def all_questions():
+    return Question.objects.prefetch_related("tags").select_related("direction").all()
