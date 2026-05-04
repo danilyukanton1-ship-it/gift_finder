@@ -1,37 +1,39 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.views import View
+
 from .models import Question, Tag, Product
-from .services import GiftSearchService, serialize_products_by_direction
+from gifts.services.gift_search_services import (
+    GiftSearchService,
+    serialize_products_by_direction,
+)
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from accounts.models import SearchHistory, Cart
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from gifts.services.question_view_services import (
+    QuestionViewService,
+)
 
 
 def index(request):
     return render(request, "gifts/index.html")
 
 
-def question_view(request):
-    questions = Question.objects.filter(is_active=True).order_by("order")
+class QuestionnaireView(View):
+    template_name = "gifts/questionnaire.html"
 
-    if request.method == "POST":
-        selected_options = []
-        for question in questions:
-            answer_key = f"question_{question.id}"
-            if answer_key in request.POST:
-                value = request.POST.get(answer_key)
-                if question.question_type == "multiple":
-                    selected_options.extend(request.POST.getlist(answer_key))
-                else:
-                    selected_options.append(value)
+    def get(self, request):
+        questions = QuestionViewService.get_active_questions()
+        context = {"questions": questions}
+        return render(request, self.template_name, context)
 
+    def post(self, request):
+        questions = QuestionViewService.get_active_questions()
+        selected_options = QuestionViewService.extract_selected(request.POST, questions)
         request.session["selected_options"] = selected_options
-
         return redirect("gifts:directions")
-    return render(request, "gifts/questionnaire.html", {"questions": questions})
-
 
 def direction_view(request):
     option_ids = request.session.get("selected_options", [])

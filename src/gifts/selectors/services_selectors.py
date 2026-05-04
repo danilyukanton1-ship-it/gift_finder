@@ -21,5 +21,6 @@ def products_all_with_tags_and_directions():
         .all()
     )
 
+
 def all_questions():
     return Question.objects.prefetch_related("tags").select_related("direction").all()

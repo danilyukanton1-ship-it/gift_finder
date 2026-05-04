@@ -6,7 +6,7 @@ app_name = "gifts"
 
 urlpatterns = [
     path("welcome", views.index, name="welcome"),
-    path("", views.question_view, name="questionnaire"),
+    path("", views.QuestionnaireView.as_view(), name="questionnaire"),
     path("directions/", views.direction_view, name="directions"),
     path("products/<int:direction_id>/", views.product_view, name="products"),
     path(

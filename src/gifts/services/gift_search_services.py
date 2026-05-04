@@ -80,7 +80,7 @@ class ProductScoreService:
 
         counted_tags = set()
 
-        options  = self._user_tag_service.options
+        options = self._user_tag_service.options
         for option in options:
             priority = option.question.priority
             option_tags = set(option.tags.all())
