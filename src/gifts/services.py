@@ -33,7 +33,7 @@ class UserTagService:
 
         for option in self.options:
             question = option.question
-            tags = set(question.tags.all())
+            tags = set(option.tags.all())
             if question in tags_from_options:
                 tags_from_options[question] |= tags
             else:
@@ -72,15 +72,18 @@ class ProductScoreService:
     def calculate_product_score(self, product_tags: List[Tag]) -> float:
         """Calculate product score based on weighted tag matches"""
         product_score = 0
-        questions = self._user_tag_service.get_all_questions()
-        for question in questions:
-            product_question_tags = {
-                tag for tag in product_tags if tag.question == question
-            }
-            user_question_tags = self._user_tag_service.get_tags(question)
-            match = product_question_tags.intersection(user_question_tags)
-            score = len(match) * question.priority
+
+        counted_tags = set()
+
+        options  = self._user_tag_service.options
+        for option in options:
+            priority = option.question.priority
+            option_tags = set(option.tags.all())
+            matched_tags = (set(product_tags) & option_tags) - counted_tags
+
+            score = len(matched_tags) * priority
             product_score += score
+            counted_tags.update(matched_tags)
         return product_score
 
     def calculate_normalized_score(self, product_tags: List[Tag]) -> float:
@@ -102,26 +105,22 @@ class ProductFilterService:
         question_order_1: Question,
         question_order_6: Question,
     ) -> None:
-        self.user_tags_service = user_tags_service
+        self._user_tags_service = user_tags_service
         self.question_order_1 = question_order_1
         self.question_order_6 = question_order_6
         self.score_calculator = ProductScoreService(user_tags_service)
 
     def validate_by_recipient(self, product_tags: List[Tag]) -> bool:
         """Checks if product has tags matching the recipient tags of a user"""
-        user_tags = self.user_tags_service.get_tags(self.question_order_1)
-        product_tags_filtered = {
-            tag for tag in product_tags if tag.question == self.question_order_1
-        }
-        return bool(user_tags & product_tags_filtered)
+        user_tags = self._user_tags_service.get_tags(self.question_order_1)
+
+        return bool(user_tags & set(product_tags))
 
     def validate_by_hobby(self, product_tags: List[Tag]) -> bool:
         """Checks if product has tags matching the hobby tags of a user"""
-        user_tags = self.user_tags_service.get_tags(self.question_order_6)
-        product_tags_filtered = {
-            tag for tag in product_tags if tag.question == self.question_order_6
-        }
-        return bool(user_tags & product_tags_filtered)
+        user_tags = self._user_tags_service.get_tags(self.question_order_6)
+
+        return bool(user_tags & set(product_tags))
 
     def score_validation(self, product_tags: List[Tag]) -> bool:
         """Checks if product's normalized score matches NEEDED score"""
@@ -192,14 +191,13 @@ class GiftSearchService:
     REQUIRED_QUESTION_ORDERS = [1, 4, 5, 6, 7, 8, 9, 10]
 
     def __init__(self, options_ids: List[int]) -> None:
-        self.options = options_fetch(options_ids)
         self.question_order_1 = question_get_by_order(order=1)
         self.question_order_6 = question_get_by_order(order=6)
         self.all_products = products_all_with_tags_and_directions()
 
-        self.user_tags_service = UserTagService(self.options)
+        self._user_tags_service = UserTagService(options_ids)
         self.product_filter = ProductFilterService(
-            self.user_tags_service,
+            self._user_tags_service,
             self.question_order_1,
             self.question_order_6,
         )
@@ -211,7 +209,7 @@ class GiftSearchService:
 
     def has_answered_required(self) -> bool:
         """Check if user answered all required questions"""
-        orders = [option.question.order for option in self.options]
+        orders = [option.question.order for option in self._user_tags_service.options]
         for answer in self.REQUIRED_QUESTION_ORDERS:
             if answer not in orders:
                 return False
@@ -219,7 +217,7 @@ class GiftSearchService:
 
     def _get_matched_tags(self, product_tags: List[Tag]) -> List[str]:
         """Get names of tags matching the product_tags"""
-        all_user_tags = self.user_tags_service.get_all_user_tags()
+        all_user_tags = self._user_tags_service.get_all_user_tags()
         matched_tags = all_user_tags.intersection(product_tags)
         return [tag.name for tag in matched_tags]
 
