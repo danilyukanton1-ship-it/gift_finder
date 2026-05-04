@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Question, Tag, Direction, Product
+from .models import Question, Tag, Product
 from .services import GiftSearchService, serialize_products_by_direction
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
