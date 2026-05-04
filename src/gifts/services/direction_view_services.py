@@ -28,6 +28,13 @@ class DirectionViewService:
         if self._result is None:
             engine = GiftSearchService(self.option_ids)
             self._result = engine.get_result()
+            # Отладка
+            print(f"=== DEBUG ===")
+            print(f"option_ids: {self.option_ids}")
+            print(f"result keys: {list(self._result.keys())}")
+            print(f"result data: {self._result}")
+            for dir_id, data in self._result.items():
+                print(f"Direction {dir_id}: {len(data.get('products', []))} products")
         return self._result
 
     def result_to_serializable(self):
@@ -35,11 +42,11 @@ class DirectionViewService:
             self._result = self.get_recommendations()
 
         serializable_result = {}
-        for direction, data in self._result.items():
-            serializable_result[direction.id] = {
-                "direction": direction,
+        for direction_id, data in self._result.items():
+            serializable_result[direction_id] = {
+                "direction": data["direction"],
                 "products": data["products"],
-                "product_count": data["product_count"],
+                "product_count": len(data["products"]),
                 "top_products": data["top_products"],
             }
         self._serializable_result = serializable_result
@@ -59,12 +66,11 @@ class DirectionViewService:
             self._result = self.get_recommendations()
 
         directions_data = []
-        for direction, data in self._result.items():
+        for direction_id, data in self._result.items():
             directions_data.append(
                 {
-                    "direction_id": direction.id,
-                    "direction": direction,
-                    "products_count": data["product_count"],
+                    "direction": data["direction"],
+                    "product_count": data["product_count"],
                     "top_products": data["top_products"],
                 }
             )

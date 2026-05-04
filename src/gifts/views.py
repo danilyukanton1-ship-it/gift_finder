@@ -16,6 +16,9 @@ from django.urls import reverse
 from gifts.services.question_view_services import (
     QuestionViewService,
 )
+from gifts.services.direction_view_services import (
+    DirectionViewService,
+)
 
 class IndexView(TemplateView):
     template_name = "gifts/index.html"
@@ -34,50 +37,19 @@ class QuestionnaireView(View):
         request.session["selected_options"] = selected_options
         return redirect("gifts:directions")
 
-def direction_view(request):
-    option_ids = request.session.get("selected_options", [])
+class DirectionView(View):
+    template_name = "gifts/directions.html"
 
-    if not option_ids:
-        messages.warning(request, "No option selected.")
-        return redirect("gifts:questionnaire")
+    def get(self, request):
+        option_ids = request.session.get("selected_options", [])
 
-    if request.user.is_authenticated:
-        history = SearchHistory.objects.create(user=request.user)
-        history.options.set(option_ids)
+        service = DirectionViewService(request, option_ids)
+        redirect_response, direction_data, should_render = service.process_service()
 
-    engine = GiftSearchService(option_ids)
-    result = engine.get_result()
+        if redirect_response:
+            return redirect_response
 
-    # Преобразуем result в формат, который ожидает сериализатор
-    result_for_serializer = {}
-    for direction, data in result.items():
-        result_for_serializer[direction.id] = {
-            "direction": direction,
-            "products": data["products"],
-            "product_count": data["product_count"],
-            "top_products": data["top_products"],
-        }
-
-    # ✅ Теперь сериализуем
-    serialized_result = serialize_products_by_direction(result_for_serializer)
-    request.session["all_products"] = serialized_result
-
-    # Подготавливаем данные для шаблона (оставляем объекты)
-    directions_data = []
-    for direction, data in result.items():
-        directions_data.append(
-            {
-                "direction": direction,
-                "products_count": data["product_count"],
-                "top_products": data["top_products"],
-            }
-        )
-
-    directions_data.sort(key=lambda x: x["products_count"], reverse=True)
-
-    return render(
-        request, "gifts/directions.html", {"directions_data": directions_data}
-    )
+        return render(request, self.template_name, {"directions_data": direction_data})
 
 
 def product_view(request, direction_id):

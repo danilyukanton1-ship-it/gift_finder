@@ -7,7 +7,7 @@ app_name = "gifts"
 urlpatterns = [
     path("welcome", views.IndexView.as_view(), name="welcome"),
     path("", views.QuestionnaireView.as_view(), name="questionnaire"),
-    path("directions/", views.direction_view, name="directions"),
+    path("directions/", views.DirectionView.as_view(), name="directions"),
     path("products/<int:direction_id>/", views.product_view, name="products"),
     path(
         "ajax/get-tags-by-question/",
