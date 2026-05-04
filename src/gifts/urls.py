@@ -5,7 +5,7 @@ from . import views
 app_name = "gifts"
 
 urlpatterns = [
-    path("welcome", views.index, name="welcome"),
+    path("welcome", views.IndexView.as_view(), name="welcome"),
     path("", views.QuestionnaireView.as_view(), name="questionnaire"),
     path("directions/", views.direction_view, name="directions"),
     path("products/<int:direction_id>/", views.product_view, name="products"),

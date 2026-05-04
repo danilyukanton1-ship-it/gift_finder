@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views import View
+from django.views.generic import TemplateView
 
 from .models import Question, Tag, Product
 from gifts.services.gift_search_services import (
@@ -16,10 +17,8 @@ from gifts.services.question_view_services import (
     QuestionViewService,
 )
 
-
-def index(request):
-    return render(request, "gifts/index.html")
-
+class IndexView(TemplateView):
+    template_name = "gifts/index.html"
 
 class QuestionnaireView(View):
     template_name = "gifts/questionnaire.html"
