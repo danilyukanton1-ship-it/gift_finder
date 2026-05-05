@@ -18,7 +18,7 @@ class AnswerSubmitAPIView(APIView):
             option_ids.extend(answer["selected_options"])
 
         engine = GiftSearchService(option_ids)
-        if not engine.has_required_answer():
+        if not engine.has_answered_required():
             return Response(
                 {"error": "You must answer all required questions"},
                 status=status.HTTP_400_BAD_REQUEST,
