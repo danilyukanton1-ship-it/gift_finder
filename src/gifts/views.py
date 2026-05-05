@@ -2,13 +2,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView
 
-from .models import Question, Tag, Product
+from .models import Tag, Product
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
-from accounts.models import SearchHistory, Cart
-from django.contrib.auth.decorators import login_required
+from accounts.models import Cart
 from django.urls import reverse
 from gifts.services.question_view_services import (
     QuestionViewService,
@@ -51,6 +50,7 @@ class DirectionView(View):
 
         return render(request, self.template_name, {"directions_data": direction_data})
 
+
 class ProductView(View):
     template_name = "gifts/products.html"
 
@@ -87,11 +87,14 @@ class CartView(LoginRequiredMixin, View):
         if not created:
             cart_item.quantity += 1
             cart_item.save()
-            messages.success(request, f'{product.name} quantity increased to {cart_item.quantity}')
+            messages.success(
+                request, f"{product.name} quantity increased to {cart_item.quantity}"
+            )
         else:
-            messages.success(request, f'{product.name} added to cart')
+            messages.success(request, f"{product.name} added to cart")
 
         return redirect(reverse("accounts:cart"))
+
 
 @staff_member_required
 def get_tags_by_question(request):
