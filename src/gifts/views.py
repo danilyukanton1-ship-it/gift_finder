@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
@@ -76,10 +77,9 @@ class ProductView(View):
         return render(request, self.template_name, context)
 
 
-class CartView(View):
+class CartView(LoginRequiredMixin, View):
     http_method_names = ["post"]
 
-    @login_required
     def post(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
         cart_item, created = Cart.objects.get_or_create(

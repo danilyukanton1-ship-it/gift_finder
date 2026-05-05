@@ -17,6 +17,6 @@ urlpatterns = [
     path(
         "products/<int:product_id>/select",
         views.CartView.as_view(),
-        name="selected_products",
+        name="add_to_cart",
     ),
 ]
