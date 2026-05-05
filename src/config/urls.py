@@ -5,24 +5,25 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
+from accounts.v1.views import LogoutView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
 )
 import debug_toolbar
-from gifts.v1.router import router as GiftRouter
-from accounts.v1.router import router as AccountRouter
+from gifts.v1.router import router as gift_router
+from accounts.v1.router import router as account_router
 from config import settings
 from custom_router import EnhancedAPIRouter
 from gifts.v1.views import AnswerSubmitAPIView
 
 router = EnhancedAPIRouter()
 # api router
-router.register("gifts", GiftRouter, basename="gift")
+router.register("gifts", gift_router, basename="gift")
 router.register(
     "account",
-    AccountRouter,
+    account_router,
     basename="account",
 )
 
@@ -31,6 +32,7 @@ jwt_urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
+    path("api/logout/", LogoutView.as_view(), name="logout"),
 ]
 
 
