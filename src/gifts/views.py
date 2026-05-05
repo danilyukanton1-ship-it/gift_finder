@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views import View
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 
 from .models import Question, Tag, Product
 from gifts.services.gift_search_services import (
@@ -54,25 +54,26 @@ class DirectionView(View):
 
         return render(request, self.template_name, {"directions_data": direction_data})
 
+class ProductView(View):
+    template_name = "gifts/products.html"
 
-def product_view(request, direction_id):
-    # Берём все товары из сессии
-    all_products = request.session.get("all_products", {})
+    def get(self, request, direction_id):
+        all_products = request.session.get("all_products", [])
 
-    # Ключ может быть строкой, приводим к строке для надёжности
-    direction_data = all_products.get(str(direction_id), {})
-    products = direction_data.get("products", [])
+        direction_data = all_products.get(str(direction_id), {})
+        products = direction_data.get("products", [])
 
-    if not products:
-        messages.warning(request, "No products found in this direction.")
-        return redirect("gifts:directions")
+        if not products:
+            messages.warning(request, "No products found in this direction.")
+            return redirect("gifts:directions")
 
-    context = {
-        "products_data": products[:20],
-        "direction_id": direction_id,
-        "direction_name": direction_data.get("direction_name"),
-    }
-    return render(request, "gifts/products.html", context)
+        context = {
+            "products_data": products,
+            "direction_id": direction_id,
+            "direction_name": direction_data.get("direction_name"),
+        }
+
+        return render(request, self.template_name, context)
 
 
 @login_required
