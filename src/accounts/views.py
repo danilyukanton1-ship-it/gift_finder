@@ -1,46 +1,51 @@
+from decimal import Decimal
 from pyexpat.errors import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import F, Sum
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.views.generic import TemplateView
 from .models import Cart, SearchHistory, SavedSearch
+from django.views import View
 
 
-def register(request):
-    if request.method == "POST":
+class RegisterView(View):
+    template_name = "accounts/register.html"
+
+    def get(self, request, *args, **kwargs):
+        form = UserCreationForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request, *args, **kwargs):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect("accounts:login")
-
-    else:
-        form = UserCreationForm()
-
-    return render(request, "accounts/register.html", {"form": form})
+        return render(request, self.template_name, {"form": form})
 
 
-@login_required
-def profile(request):
-    return render(request, "accounts/profile.html")
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = "accounts/profile.html"
 
 
-@login_required
-def update_cart(request, item_id):
-    if request.method == "POST":
+class UpdateCartView(LoginRequiredMixin, View):
+
+    def post(self, request, item_id):
         quantity = int(request.POST.get("quantity", 1))
-        item = Cart.objects.get(id=item_id, user=request.user)
+        item = get_object_or_404(Cart, id=item_id, user=request.user)
         if quantity > 0:
             item.quantity = quantity
             item.save()
         else:
             item.delete()
-    return redirect("accounts:cart")
+        return redirect("accounts:cart")
 
 
-@login_required
-def delete_from_cart(request, item_id):
-    if request.method == "POST":
+class DeleteFromCartView(LoginRequiredMixin, View):
+
+    def post(self, request, item_id):
         deleted, _ = Cart.objects.filter(id=item_id, user=request.user).delete()
         if deleted:
             messages.success(request, "Item removed from cart.")
@@ -48,45 +53,51 @@ def delete_from_cart(request, item_id):
             messages.warning(request, "Item not removed from cart.")
         return redirect("accounts:cart")
 
-    return redirect("accounts:cart")
+
+class CartView(LoginRequiredMixin, View):
+    template_name = "accounts/cart.html"
+
+    def get(self, request):
+        cart_items = (
+            Cart.objects.filter(user=request.user, is_purchased=False)
+            .select_related("product")
+            .annotate(item_total=F("quantity") * F("product__price"))
+        )
+
+        total = cart_items.aggregate(Sum("item_total"))["item_total__sum"] or Decimal(0)
+        context = {
+            "cart_items": cart_items,
+            "total": total,
+        }
+        return render(request, self.template_name, context)
 
 
-@login_required
-def cart(request):
-    cart_items = Cart.objects.filter(
-        user=request.user, is_purchased=False
-    ).select_related("product")
+class CartCountView(LoginRequiredMixin, View):
 
-    total = sum(item.quantity * item.product.price for item in cart_items)
-
-    context = {
-        "cart_items": cart_items,
-        "total": total,
-    }
-    return render(request, "accounts/cart.html", context)
+    def get(self, request):
+        count = Cart.objects.filter(user=request.user, is_purchased=False).count()
+        return JsonResponse({"count": count})
 
 
-@login_required
-def cart_count(request):
-    count = Cart.objects.filter(user=request.user, is_purchased=False).count()
-    return JsonResponse({"count": count})
+class ProfileViewContext(LoginRequiredMixin, View):
+    template_name = "accounts/profile.html"
+
+    def get(self, request):
+        context = {
+            "search_history": SearchHistory.objects.filter(user=request.user).count(),
+            "saved_search": SavedSearch.objects.filter(user=request.user).count(),
+            "cart": Cart.objects.filter(user=request.user).count(),
+        }
+        return render(request, self.template_name, context)
 
 
-@login_required
-def profile(request):
-    context = {
-        "search_history": SearchHistory.objects.filter(user=request.user).count(),
-        "saved_search": SavedSearch.objects.filter(user=request.user).count(),
-        "cart": Cart.objects.filter(user=request.user).count(),
-    }
-    return render(request, "accounts/profile.html", context)
+class SearchHistoryView(LoginRequiredMixin, View):
+    template_name = "accounts/search_history.html"
 
-
-@login_required
-def search_history(request):
-    context = {
-        "search_history": SearchHistory.objects.filter(user=request.user)
-        .prefetch_related("options")
-        .order_by("-created_at"),
-    }
-    return render(request, "accounts/search_history.html", context)
+    def get(self, request):
+        context = {
+            "search_history": SearchHistory.objects.filter(user=request.user)
+            .prefetch_related("options")
+            .order_by("-created_at"),
+        }
+        return render(request, self.template_name, context)
