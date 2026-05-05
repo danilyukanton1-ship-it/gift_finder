@@ -1,14 +1,19 @@
-from decimal import Decimal
 from pyexpat.errors import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.views.generic import TemplateView
-from .models import Cart, SearchHistory, SavedSearch
+from .models import Cart
 from django.views import View
+from accounts.selectors import (
+    cart_items_get,
+    cart_items_get_with_item_total,
+    cart_total_price,
+    search_history_get,
+    saved_search_get,
+)
 
 
 class RegisterView(View):
@@ -58,13 +63,9 @@ class CartView(LoginRequiredMixin, View):
     template_name = "accounts/cart.html"
 
     def get(self, request):
-        cart_items = (
-            Cart.objects.filter(user=request.user, is_purchased=False)
-            .select_related("product")
-            .annotate(item_total=F("quantity") * F("product__price"))
-        )
+        cart_items = cart_items_get_with_item_total(request)
 
-        total = cart_items.aggregate(Sum("item_total"))["item_total__sum"] or Decimal(0)
+        total = cart_total_price(cart_items)
         context = {
             "cart_items": cart_items,
             "total": total,
@@ -75,7 +76,7 @@ class CartView(LoginRequiredMixin, View):
 class CartCountView(LoginRequiredMixin, View):
 
     def get(self, request):
-        count = Cart.objects.filter(user=request.user, is_purchased=False).count()
+        count = cart_items_get(request).count()
         return JsonResponse({"count": count})
 
 
@@ -84,9 +85,9 @@ class ProfileViewContext(LoginRequiredMixin, View):
 
     def get(self, request):
         context = {
-            "search_history": SearchHistory.objects.filter(user=request.user).count(),
-            "saved_search": SavedSearch.objects.filter(user=request.user).count(),
-            "cart": Cart.objects.filter(user=request.user).count(),
+            "search_history": search_history_get(request=request).count(),
+            "saved_search": saved_search_get(request=request).count(),
+            "cart": cart_items_get(request=request).count(),
         }
         return render(request, self.template_name, context)
 
@@ -96,7 +97,7 @@ class SearchHistoryView(LoginRequiredMixin, View):
 
     def get(self, request):
         context = {
-            "search_history": SearchHistory.objects.filter(user=request.user)
+            "search_history": search_history_get(request=request)
             .prefetch_related("options")
             .order_by("-created_at"),
         }
