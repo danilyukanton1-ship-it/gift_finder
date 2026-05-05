@@ -20,8 +20,10 @@ from gifts.services.direction_view_services import (
     DirectionViewService,
 )
 
+
 class IndexView(TemplateView):
     template_name = "gifts/index.html"
+
 
 class QuestionnaireView(View):
     template_name = "gifts/questionnaire.html"
@@ -36,6 +38,7 @@ class QuestionnaireView(View):
         selected_options = QuestionViewService.extract_selected(request.POST, questions)
         request.session["selected_options"] = selected_options
         return redirect("gifts:directions")
+
 
 class DirectionView(View):
     template_name = "gifts/directions.html"
