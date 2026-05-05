@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
 from django.views.generic import TemplateView, ListView
@@ -76,36 +76,26 @@ class ProductView(View):
         return render(request, self.template_name, context)
 
 
-@login_required
-def selected_products(request, product_id):
-    """
-    :param request:
-    :param product_id:
-    :return: add products to the cart
-    """
-    print("functions is working!!!!!!!!!!!!!!!!!")
-    if request.method != "POST":
-        return JsonResponse({"error": "Method not allowed."}, status=405)
+class CartView(View):
+    http_method_names = ["post"]
 
-    try:
-        product = Product.objects.get(id=product_id)
-    except Product.DoesNotExist:
-        return JsonResponse({"error": "Product does not exist."}, status=404)
-    print(f"{product.id} - {product.name}")
-    chosen, created = Cart.objects.get_or_create(
-        user=request.user,
-        product=product,
-        defaults={"quantity": 1, "is_purchased": False},
-    )
+    @login_required
+    def post(self, request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+        cart_item, created = Cart.objects.get_or_create(
+            user=request.user,
+            product=product,
+            defaults={"quantity": 1, "is_purchased": False},
+        )
 
-    if not created:
-        # Если товар уже есть — увеличиваем количество
-        chosen.quantity += 1
-        chosen.save()
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+            messages.success(request, f'{product.name} quantity increased to {cart_item.quantity}')
+        else:
+            messages.success(request, f'{product.name} added to cart')
 
-    # ВСЕГДА редирект на корзину (или можно на страницу товаров)
-    return redirect(reverse("accounts:cart"))
-
+        return redirect(reverse("accounts:cart"))
 
 @staff_member_required
 def get_tags_by_question(request):
