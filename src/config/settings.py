@@ -10,9 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+from email.policy import default
 from pathlib import Path
 import environ
 from django.urls import reverse_lazy
+from datetime import timedelta
 
 env = environ.Env()
 environ.Env.read_env(env_file=".env")
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "debug_toolbar",
+    "rest_framework_simplejwt",
     # my App
     "gifts.apps.GiftsConfig",
 ]
@@ -135,9 +138,25 @@ STATIC_URL = "/static/"
 
 # Rest_framework settings
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=env.int("ACCESS_TOKEN_LIFETIME", default=10)
+    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        minutes=env.int("REFRESH_TOKEN_LIFETIME", default=7200)
+    ),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": env("SECRET_KEY"),
 }
