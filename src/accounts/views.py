@@ -1,5 +1,5 @@
 from pyexpat.errors import messages
-
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -64,6 +64,12 @@ def cart(request):
         "total": total,
     }
     return render(request, "accounts/cart.html", context)
+
+
+@login_required
+def cart_count(request):
+    count = Cart.objects.filter(user=request.user, is_purchased=False).count()
+    return JsonResponse({"count": count})
 
 
 @login_required

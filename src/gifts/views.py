@@ -5,10 +5,6 @@ from django.views import View
 from django.views.generic import TemplateView, ListView
 
 from .models import Question, Tag, Product
-from gifts.services.gift_search_services import (
-    GiftSearchService,
-    serialize_products_by_direction,
-)
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from accounts.models import SearchHistory, Cart
