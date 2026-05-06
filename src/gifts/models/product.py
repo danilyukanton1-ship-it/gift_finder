@@ -2,9 +2,10 @@ from django.db import models
 from .direction import Direction
 from .tag import Tag
 from django.core.validators import MinValueValidator, MaxValueValidator
+from base.models import BaseModel
 
 
-class Product(models.Model):
+class Product(BaseModel):
 
     class Meta:
         verbose_name = "Product"
@@ -79,7 +80,6 @@ class Product(models.Model):
     reviews_count = models.IntegerField(verbose_name="Reviews Count")
     in_stock = models.BooleanField(default=False, verbose_name="In stock")
     last_checked = models.DateTimeField(auto_now=True, verbose_name="Last Checked")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
 
     def __str__(self):
         return f"{self.name} - {self.price}"

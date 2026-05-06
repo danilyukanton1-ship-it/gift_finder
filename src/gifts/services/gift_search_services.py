@@ -1,0 +1,312 @@
+from gifts.models import Tag, Product, Direction
+from gifts.selectors import (
+    options_fetch,
+    question_get_by_order,
+    products_all_with_tags_and_directions,
+    all_questions,
+)
+from typing import Dict, Set, List, Tuple, TypedDict, Any
+
+
+class ProductData(TypedDict):
+    product: Product
+    normalized_score: float
+    matched_tags: List[str]
+
+
+class DirectionData(TypedDict):
+    direction: Direction
+    products: List[ProductData]
+    product_count: int
+    top_products: List[ProductData]
+
+
+class UserTagService:
+    """Gets list of options the user have chosen"""
+
+    def __init__(self, options: List[int]) -> None:
+        self.options = options_fetch(options)
+        self.tags_by_questions_id = self._build_tags_by_question_id()
+        self.all_questions = all_questions()
+
+    def _build_tags_by_question_id(self) -> Dict[int, Set[Tag]]:
+        """Build mapping from question to set of tags"""
+        tags_from_options = {}
+
+        for option in self.options:
+            question_id = option.question.id
+            tags = set(option.tags.all())
+            if question_id in tags_from_options:
+                tags_from_options[question_id] |= tags
+            else:
+                tags_from_options[question_id] = tags
+
+        return tags_from_options
+
+    def get_tags(self, question_id: int) -> Set[Tag]:
+        """Get user selected tags for a specific question"""
+        return self.tags_by_questions_id.get(question_id, set())
+
+    def get_all_questions_ids(self) -> List[int]:
+        """Get all questions that user answered"""
+        return list(self.tags_by_questions_id.keys())
+
+    def calculate_max_score(self) -> float:
+        """Calculate max possible score that product can receive if matching all the tags"""
+        max_score = 0
+        questions_by_id = {q.id: q for q in self.all_questions}
+
+        for question_id, tags in self.tags_by_questions_id.items():
+            priority = questions_by_id[question_id].priority
+            max_score += len(tags) * priority
+        return max_score
+
+    def get_all_user_tags(self) -> Set[Tag]:
+        """Get all tags selected by user across all questions"""
+        all_tags = set()
+        for tags in self.tags_by_questions_id.values():
+            all_tags.update(tags)
+        return all_tags
+
+
+class ProductScoreService:
+
+    def __init__(self, user_tags_service: UserTagService) -> None:
+        self._user_tag_service = user_tags_service
+
+    def calculate_product_score(self, product_tags: List[Tag]) -> float:
+        """Calculate product score based on weighted tag matches"""
+        product_score = 0
+
+        counted_tags = set()
+
+        options = self._user_tag_service.options
+        for option in options:
+            priority = option.question.priority
+            option_tags = set(option.tags.all())
+            matched_tags = (set(product_tags) & option_tags) - counted_tags
+
+            score = len(matched_tags) * priority
+            product_score += score
+            counted_tags.update(matched_tags)
+        return product_score
+
+    def calculate_normalized_score(self, product_tags: List[Tag]) -> float:
+        """Calculate normalized score (0-100) for a product"""
+        product_score = self.calculate_product_score(product_tags)
+        max_score = self._user_tag_service.calculate_max_score()
+        if max_score == 0:
+            return 0
+        return (product_score / max_score) * 100
+
+
+class ProductFilterService:
+
+    SCORE_NEEDED = 40
+
+    def __init__(
+        self,
+        user_tags_service: UserTagService,
+        question_order_1: int,
+        question_order_6: int,
+    ) -> None:
+        self._user_tags_service = user_tags_service
+        self.question_order_1 = question_order_1
+        self.question_order_6 = question_order_6
+        self.score_calculator = ProductScoreService(user_tags_service)
+
+    def validate_by_recipient(self, product_tags: List[Tag]) -> bool:
+        """Checks if product has tags matching the recipient tags of a user"""
+        user_tags = self._user_tags_service.get_tags(self.question_order_1)
+
+        return bool(user_tags & set(product_tags))
+
+    def validate_by_hobby(self, product_tags: List[Tag]) -> bool:
+        """Checks if product has tags matching the hobby tags of a user"""
+        user_tags = self._user_tags_service.get_tags(self.question_order_6)
+
+        return bool(user_tags & set(product_tags))
+
+    def score_validation(self, product_tags: List[Tag]) -> bool:
+        """Checks if product's normalized score matches NEEDED score"""
+        return (
+            self.score_calculator.calculate_normalized_score(product_tags)
+            > self.SCORE_NEEDED
+        )
+
+    def evaluate_product(self, product_tags: List[Tag]) -> Tuple[bool, float]:
+        """
+        Checks if product should be kept
+        return: tuple(should_keep: bool, normalized_score: float)
+        """
+        if not self.validate_by_recipient(product_tags):
+            return False, 0
+        if not self.validate_by_hobby(product_tags):
+            return False, 0
+        if not self.score_validation(product_tags):
+            return False, 0
+        score = self.score_calculator.calculate_normalized_score(product_tags)
+
+        return True, score
+
+
+class ProductGroupService:
+
+    def __init__(self, collected_products: List[ProductData]) -> None:
+        self.collected_products = collected_products
+        self.directions_grouped = self._group_by_direction()
+
+    def _group_by_direction(self) -> Dict[int, DirectionData]:
+        """Group products by their direction"""
+        directions_grouped = {}
+        for product in self.collected_products:
+            direction = product["product"].direction
+            direction_id = direction.id
+            if direction_id not in directions_grouped:
+                directions_grouped[direction_id] = {
+                    "direction_id": direction_id,
+                    "direction": direction,
+                    "products": [],
+                    "product_count": 0,
+                    "top_products": [],
+                }
+            directions_grouped[direction_id]["products"].append(product)
+            directions_grouped[direction_id]["product_count"] += 1
+        return directions_grouped
+
+    def sort_by_score_in_directions(self) -> "ProductGroupService":
+        """Sort products by their score in their directions"""
+        for data in self.directions_grouped.values():
+            data["products"].sort(
+                key=lambda item: item["normalized_score"], reverse=True
+            )
+        return self
+
+    def select_top_products(self, limit: int = 3) -> "ProductGroupService":
+        """Select top (limit=N) products by their score in their directions"""
+        for data in self.directions_grouped.values():
+            data["top_products"] = data["products"][:limit]
+        return self
+
+    def get_grouped_result(self) -> Dict[int, DirectionData]:
+        """Return products grouped with top selections"""
+        return self.directions_grouped
+
+
+class GiftSearchService:
+
+    REQUIRED_QUESTION_ORDERS = [1, 4, 5, 6, 7, 8, 9, 10]
+
+    def __init__(self, options_ids: List[int]) -> None:
+        self.question_order_1 = question_get_by_order(order=1)
+        self.question_order_6 = question_get_by_order(order=6)
+        self.all_products = products_all_with_tags_and_directions()
+
+        self._user_tags_service = UserTagService(options_ids)
+        self.product_filter = ProductFilterService(
+            self._user_tags_service,
+            self.question_order_1,
+            self.question_order_6,
+        )
+
+        self.collected_products = self._collect_products()
+        self.product_grouper = ProductGroupService(self.collected_products)
+        self.product_grouper.sort_by_score_in_directions().select_top_products(limit=3)
+        self.directions_grouped = self.product_grouper.get_grouped_result()
+
+    def has_answered_required(self) -> bool:
+        """Check if user answered all required questions"""
+        orders = [option.question.order for option in self._user_tags_service.options]
+        for answer in self.REQUIRED_QUESTION_ORDERS:
+            if answer not in orders:
+                return False
+        return True
+
+    def _get_matched_tags(self, product_tags: List[Tag]) -> List[str]:
+        """Get names of tags matching the product_tags"""
+        all_user_tags = self._user_tags_service.get_all_user_tags()
+        matched_tags = all_user_tags.intersection(product_tags)
+        return [tag.name for tag in matched_tags]
+
+    def _collect_products(self) -> List[ProductData]:
+        """Collecting products with all validators, filters, and scoring calculations
+        Main orchestrator def
+        """
+        collected_products = []
+        for product in self.all_products:
+            product_tags = list(product.tags.all())
+            should_keep, score = self.product_filter.evaluate_product(product_tags)
+            if not should_keep:
+                continue
+            collected_products.append(
+                {
+                    "product": product,
+                    "normalized_score": score,
+                    "matched_tags": self._get_matched_tags(product_tags),
+                }
+            )
+        return collected_products
+
+    def get_result(self) -> Dict[int, DirectionData]:
+        """return final results grouped by direction"""
+        return self.directions_grouped
+
+
+def serialize_products_by_direction(
+    products_by_direction: Dict[int, DirectionData],
+) -> Dict[int, Dict[str, Any]]:
+    """
+    :param products_by_direction:
+    :return: serializable list of dirs of products
+    """
+    serialized = {}
+    for dir_id, data in products_by_direction.items():
+        serialized_products = []
+        for product_data in data["products"]:
+            serialized_products.append(
+                {
+                    "product_id": product_data["product"].id,
+                    "product_name": product_data["product"].name,
+                    "product_price": float(product_data["product"].price),
+                    "product_currency": product_data["product"].currency,
+                    "product_source": product_data["product"].source,
+                    "product_url": product_data["product"].product_url,
+                    "product_image_url": product_data["product"].image_url,
+                    "product_rating": (
+                        float(product_data["product"].rating)
+                        if product_data["product"].rating
+                        else None
+                    ),
+                    "normalized_score": product_data["normalized_score"],
+                }
+            )
+
+        serialized_top = []
+        for product_data in data["top_products"]:
+            serialized_top.append(
+                {
+                    "product_id": product_data["product"].id,
+                    "product_name": product_data["product"].name,
+                    "product_price": float(product_data["product"].price),
+                    "product_currency": product_data["product"].currency,
+                    "product_source": product_data["product"].source,
+                    "product_url": product_data["product"].product_url,
+                    "product_image_url": product_data["product"].image_url,
+                    "product_rating": (
+                        float(product_data["product"].rating)
+                        if product_data["product"].rating
+                        else None
+                    ),
+                    "normalized_score": product_data["normalized_score"],
+                }
+            )
+
+        serialized[dir_id] = {
+            "direction_id": data["direction"].id,
+            "direction_name": data["direction"].name,
+            "products": serialized_products,
+            "product_count": data["product_count"],
+            "top_products": serialized_top,
+        }
+
+    return serialized

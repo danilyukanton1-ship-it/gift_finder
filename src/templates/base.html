@@ -70,7 +70,9 @@
                             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
                                 <i class="bi bi-person"></i> Profile
                             </a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <form action="{% url 'accounts:logout' %}" method="post">
                                     {% csrf_token %}
@@ -93,14 +95,14 @@
                         </a>
                     </li>
                     {% endif %}
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{% url 'accounts:cart' %}">
                             <i class="bi bi-cart3"></i> Cart
-                            {% if user.is_authenticated %}
                             <span class="cart-badge" id="cart-count">0</span>
-                            {% endif %}
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -124,18 +126,42 @@
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
 <script>
-    // Простая функция для обновления счётчика корзины (опционально)
     function updateCartCount() {
-        fetch('/accounts/cart/count/')
-            .then(response => response.json())
-            .then(data => {
-                const badge = document.getElementById('cart-count');
-                if (badge) badge.textContent = data.count || 0;
-            })
-            .catch(error => console.log('Cart count not available'));
-    }
-    // Раскомментировать, если добавишь API для количества товаров
-    // if (document.getElementById('cart-count')) updateCartCount();
+    fetch('/accounts/cart/count/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const badge = document.getElementById('cart-count');
+            if (badge) {
+                const count = data.count || 0;
+                badge.textContent = count;
+                // Показываем/скрываем бейдж в зависимости от количества
+                badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        })
+        .catch(error => {
+            console.log('Cart count not available:', error);
+            // Опционально: скрыть бейдж при ошибке
+            const badge = document.getElementById('cart-count');
+            if (badge) badge.style.display = 'none';
+        });
+}
+
+// Вызывать при загрузке страницы и после добавления в корзину
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCount();
+
+    // Для форм добавления в корзину (без перезагрузки)
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', function() {
+            setTimeout(updateCartCount, 500); // Обновить после отправки
+        });
+    });
+});
 </script>
 </body>
 </html>

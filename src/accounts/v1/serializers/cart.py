@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from gifts.models import Product
-from accounts.models import ChosenProducts
+from accounts.models import Cart
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -19,7 +19,7 @@ class ProductSerializer(serializers.ModelSerializer):
         )
 
 
-class ChosenProductsSerializer(serializers.ModelSerializer):
+class CartSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChosenProducts
+        model = Cart
         fields = ("id", "product", "selected_at", "quantity", "is_purchased", "note")

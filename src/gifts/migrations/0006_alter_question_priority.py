@@ -7,13 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gifts', '0005_question_priority'),
+        ("gifts", "0005_question_priority"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='question',
-            name='priority',
-            field=models.IntegerField(default=3, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(10)], verbose_name='Priority'),
+            model_name="question",
+            name="priority",
+            field=models.IntegerField(
+                default=3,
+                validators=[
+                    django.core.validators.MinValueValidator(1),
+                    django.core.validators.MaxValueValidator(10),
+                ],
+                verbose_name="Priority",
+            ),
         ),
     ]

@@ -115,6 +115,7 @@ if not admin.site.is_registered(Direction):
         list_display = ["name", "parent", "order"]
         list_filter = ["parent"]
         search_fields = ["name"]
+        filter_horizontal = ["tags"]
 
 
 @admin.register(Product)

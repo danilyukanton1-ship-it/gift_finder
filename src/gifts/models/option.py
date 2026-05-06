@@ -1,9 +1,10 @@
 from django.db import models
 from .question import Question
 from .tag import Tag
+from base.models import BaseModel
 
 
-class Option(models.Model):
+class Option(BaseModel):
 
     class Meta:
         verbose_name = "Option"

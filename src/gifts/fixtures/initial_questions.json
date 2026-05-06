@@ -1,0 +1,132 @@
+[
+  {
+    "model": "gifts.question",
+    "pk": 1,
+    "fields": {
+      "text": "Who are u buying a gift for?",
+      "description": "Research shows that the closer we are to someone, the more likely we are to choose gifts that bring joy rather than just practicality. Let's start by understanding your relationship.",
+      "question_type": "single",
+      "order": 1,
+      "is_active": true,
+      "priority": 10,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 2,
+    "fields": {
+      "text": "What is your budget?",
+      "description": "No psychology here - just practical math. We'll show you gifts that fit your price range, from thoughtful little things to premium surprises.",
+      "question_type": "single",
+      "order": 4,
+      "is_active": true,
+      "priority": 5,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 3,
+    "fields": {
+      "text": "How old is the child?",
+      "description": "Gifts for kids change dramatically with age — a toy for a 2-year-old is very different from one for a 10-year-old. Help us get it right.",
+      "question_type": "single",
+      "order": 3,
+      "is_active": true,
+      "priority": 7,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 4,
+    "fields": {
+      "text": "What is the child's gender?",
+      "description": "Boys and girls often have different preferences — even at a young age. This helps us narrow down the perfect gift.",
+      "question_type": "single",
+      "order": 2,
+      "is_active": true,
+      "priority": 7,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 5,
+    "fields": {
+      "text": "What is the occasion?",
+      "description": "Did you know? Gifts given \"just because\" are often appreciated even more than birthday presents. But every occasion has its own vibe.",
+      "question_type": "single",
+      "order": 5,
+      "is_active": true,
+      "priority": 3,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 6,
+    "fields": {
+      "text": "What are they passionate about?",
+      "description": "This is where the magic happens. Psychologists say the best gifts connect with a person's passions. Choose the ones that fit best - the more, the better!",
+      "question_type": "multiple",
+      "order": 6,
+      "is_active": true,
+      "priority": 10,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 7,
+    "fields": {
+      "text": "What matters most in a gift?",
+      "description": "According to research, people value gifts differently - some want practicality, others want surprise. What would they appreciate more?",
+      "question_type": "single",
+      "order": 7,
+      "is_active": true,
+      "priority": 2,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 8,
+    "fields": {
+      "text": "What colors do they prefer?",
+      "description": "Color psychology is real - favorite colors say a lot about personality. Plus, it helps us find gifts that match their vibe.",
+      "question_type": "multiple",
+      "order": 8,
+      "is_active": true,
+      "priority": 1,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 9,
+    "fields": {
+      "text": "What style fits them best?",
+      "description": "A minimalist and a maximalist see the world differently — and they like different gifts. Let's find their aesthetic.",
+      "question_type": "single",
+      "order": 9,
+      "is_active": true,
+      "priority": 2,
+      "image_url": null
+    }
+  },
+  {
+    "model": "gifts.question",
+    "pk": 10,
+    "fields": {
+      "text": "How would you describe their personality?",
+      "description": "The final piece of the puzzle. Personality influences everything - from color choices to gift preferences. This helps us fine-tune the recommendations.",
+      "question_type": "single",
+      "order": 10,
+      "is_active": true,
+      "priority": 2,
+      "image_url": null
+    }
+  }
+]

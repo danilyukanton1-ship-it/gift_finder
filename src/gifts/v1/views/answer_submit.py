@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from gifts.services import GiftSearchEngine, serialize_products_by_direction
+from gifts.services import GiftSearchService, serialize_products_by_direction
 from gifts.v1.serializers import AnswerSubmitSerializer
 from rest_framework import status
 
@@ -17,7 +17,7 @@ class AnswerSubmitAPIView(APIView):
         for answer in serializer.validated_data["answers"]:
             option_ids.extend(answer["selected_options"])
 
-        engine = GiftSearchEngine(option_ids)
+        engine = GiftSearchService(option_ids)
         if not engine.has_required_answer():
             return Response(
                 {"error": "You must answer all required questions"},

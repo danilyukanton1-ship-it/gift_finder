@@ -7,20 +7,45 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gifts', '0001_initial'),
+        ("gifts", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProductTag',
+            name="ProductTag",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='product_tags', to='gifts.product')),
-                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='gifts.question')),
-                ('tags', models.ManyToManyField(blank=True, to='gifts.tag', verbose_name='Tags')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="product_tags",
+                        to="gifts.product",
+                    ),
+                ),
+                (
+                    "question",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="gifts.question"
+                    ),
+                ),
+                (
+                    "tags",
+                    models.ManyToManyField(
+                        blank=True, to="gifts.tag", verbose_name="Tags"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('product', 'question')},
+                "unique_together": {("product", "question")},
             },
         ),
     ]

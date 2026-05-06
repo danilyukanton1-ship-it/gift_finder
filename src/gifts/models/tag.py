@@ -1,8 +1,9 @@
 from django.db import models
 from .question import Question
+from base.models import BaseModel
 
 
-class Tag(models.Model):
+class Tag(BaseModel):
     name = models.CharField(max_length=50, verbose_name="Tag name")
     question = models.ForeignKey(
         Question,

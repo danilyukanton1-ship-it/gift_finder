@@ -7,21 +7,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gifts', '0002_producttag'),
+        ("gifts", "0002_producttag"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tag',
-            name='question',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='tags', to='gifts.question'),
+            model_name="tag",
+            name="question",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="tags",
+                to="gifts.question",
+            ),
         ),
         migrations.AlterField(
-            model_name='tag',
-            name='name',
-            field=models.CharField(max_length=50, unique=True, verbose_name='Tag name'),
+            model_name="tag",
+            name="name",
+            field=models.CharField(max_length=50, unique=True, verbose_name="Tag name"),
         ),
         migrations.DeleteModel(
-            name='ProductTag',
+            name="ProductTag",
         ),
     ]

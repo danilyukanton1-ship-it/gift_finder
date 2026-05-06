@@ -21,16 +21,20 @@
                     {% if item.product_rating %}
                     <p class="text-warning small">★ {{ item.product_rating }}/5</p>
                     {% endif %}
-                    <p class="text-muted small">Match: {{ item.weight_score }}%</p>
+                    <p class="text-muted small">Match: {{ item.normalized_score|floatformat:0 }}%</p>
+                    {% if item.product_source %}
+                    <p class="text-muted small">Store: {{ item.product_source }}</p>
+                    {% endif %}
                 </div>
                 <div class="card-footer">
                     <div class="d-grid gap-2">
+                        {% if item.product_url %}
                         <a href="{{ item.product_url }}" class="btn btn-success" target="_blank">
-                            Buy on {{ item.product_source }}
+                            Buy on {{ item.product_source|default:"Store" }}
                         </a>
+                        {% endif %}
 
-                        <!-- ПРОСТАЯ ФОРМА БЕЗ JS -->
-                        <form method="post" action="/gifts/products/{{ item.product_id }}/select">
+                        <form method="post" action="{% url 'gifts:add_to_cart' item.product_id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline-primary w-100">
                                 Select

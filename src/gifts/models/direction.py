@@ -1,8 +1,9 @@
 from django.db import models
 from .tag import Tag
+from base.models import BaseModel
 
 
-class Direction(models.Model):
+class Direction(BaseModel):
 
     class Meta:
         verbose_name = "Direction"

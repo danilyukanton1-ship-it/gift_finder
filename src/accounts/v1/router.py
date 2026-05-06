@@ -2,7 +2,7 @@ from rest_framework.routers import DefaultRouter
 
 from accounts.v1.views import (
     SearchHistoryViewSet,
-    ChosenProductsViewSet,
+    CartViewSet,
     SavedSearchViewSet,
     UserViewSet,
 )
@@ -10,6 +10,6 @@ from accounts.v1.views import (
 router = DefaultRouter()
 
 router.register("search-history", SearchHistoryViewSet, basename="search-history")
-router.register("chosen-products", ChosenProductsViewSet, basename="chosen-products")
+router.register("cart", CartViewSet, basename="cart")
 router.register("saved-search", SavedSearchViewSet, basename="saved-search")
 router.register("user", UserViewSet, basename="user")
