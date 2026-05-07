@@ -33,7 +33,7 @@ class Question(BaseModel):
     )
     order = models.IntegerField(default=0, verbose_name="Order")
     is_active = models.BooleanField(default=True, verbose_name="Active")
-
+    is_required = models.BooleanField(default=True, verbose_name="Required")
     priority = models.IntegerField(
         default=3,
         validators=[MinValueValidator(1), MaxValueValidator(10)],

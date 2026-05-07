@@ -4,6 +4,15 @@
 <div class="container">
     <h1 class="text-center mb-4">Let's come up with what gift do you need</h1>
 
+    <!-- Блок для ошибок -->
+    {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
 
@@ -12,7 +21,6 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ question.text }}</h5>
 
-                    <!-- Если есть описание вопроса -->
                     {% if question.description %}
                         <p class="text-muted small">{{ question.description }}</p>
                     {% endif %}
@@ -21,22 +29,22 @@
                         {% for option in question.options.all %}
                             <div class="form-check mb-2">
                                 {% if question.question_type == 'multiple' %}
-                                    <!-- Для вопросов с несколькими вариантами (checkbox) -->
                                     <input class="form-check-input"
                                            type="checkbox"
                                            name="question_{{ question.id }}"
                                            value="{{ option.id }}"
-                                           id="opt_{{ option.id }}">
+                                           id="opt_{{ question.id }}_{{ option.id }}"
+                                           {% if option.id|slugify in selected_options %}checked{% endif %}>
                                 {% else %}
-                                    <!-- Для вопросов с одним вариантом (radio) -->
                                     <input class="form-check-input"
                                            type="radio"
                                            name="question_{{ question.id }}"
                                            value="{{ option.id }}"
-                                           id="opt_{{ option.id }}">
+                                           id="opt_{{ question.id }}_{{ option.id }}"
+                                           {% if option.id|slugify in selected_options %}checked{% endif %}>
                                 {% endif %}
 
-                                <label class="form-check-label" for="opt_{{ option.id }}">
+                                <label class="form-check-label" for="opt_{{ question.id }}_{{ option.id }}">
                                     {{ option.text }}
                                 </label>
                             </div>

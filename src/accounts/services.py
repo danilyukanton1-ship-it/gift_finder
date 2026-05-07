@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.cache import cache
 from datetime import datetime
 
+
 class JWTBlacklistService:
 
     def __init__(self, cache_client=None):
@@ -29,7 +30,7 @@ class JWTBlacklistService:
             ttl = 300
 
         if ttl > 0:
-            self._cache.set(f"blacklist_{jti}", 'blacklisted', timeout=int(ttl))
+            self._cache.set(f"blacklist_{jti}", "blacklisted", timeout=int(ttl))
             return True
         return False
 
@@ -38,6 +39,7 @@ class JWTBlacklistService:
         if not jti:
             return False
         return self._cache.get(f"blacklist_{jti}") is not None
+
 
 @lru_cache
 def get_blacklist_service():

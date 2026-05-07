@@ -32,6 +32,16 @@ class QuestionnaireView(View):
     def post(self, request):
         questions = QuestionViewService.get_active_questions()
         selected_options = QuestionViewService.extract_selected(request.POST, questions)
+        is_valid = QuestionViewService.validate_answer(selected_options, questions)
+
+        if not is_valid:
+            context = {
+                "questions": questions,
+                "error": "Please answer all the required questions. If you choose a gift for a child, answer all the questions. If not, answer all the required questions.",
+                "selected_options": selected_options,
+            }
+            return render(request, self.template_name, context, status=400)
+
         request.session["selected_options"] = selected_options
         return redirect("gifts:directions")
 
