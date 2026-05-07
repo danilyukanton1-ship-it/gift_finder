@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from email.policy import default
 from pathlib import Path
 import environ
 from django.urls import reverse_lazy
@@ -32,7 +31,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "accounts.apps.AccountsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -46,6 +44,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     # my App
     "gifts.apps.GiftsConfig",
+    "accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
@@ -89,6 +88,7 @@ DATABASES = {
         "PASSWORD": env("DB_PASSWORD"),
         "HOST": env("DB_HOST"),
         "PORT": env("DB_PORT"),
+        "TEST": {"DATABASE": env("TEST_DB_NAME")},
     }
 }
 
