@@ -15,15 +15,14 @@ import environ
 from django.urls import reverse_lazy
 from datetime import timedelta
 
-env = environ.Env()
-environ.Env.read_env(env_file="../../.env")
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+env = environ.Env()
+env_file = BASE_DIR.parent / ".env"
+environ.Env.read_env(env_file=env_file)
+
 SECRET_KEY = env("SECRET_KEY")
-# SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
