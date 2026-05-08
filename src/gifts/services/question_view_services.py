@@ -43,7 +43,9 @@ class QuestionViewService:
             )
         else:
             return set(
-                Question.objects.filter(is_required=True).values_list("id", flat=True)
+                Question.objects.filter(
+                    is_active=True, status=Question.QuestionStatus.REQUIRED
+                ).values_list("id", flat=True)
             )
 
     @staticmethod

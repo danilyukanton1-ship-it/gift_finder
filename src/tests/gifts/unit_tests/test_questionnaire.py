@@ -26,7 +26,7 @@ class QuestionnaireTest(TestCase):
             question_type=Question.QuestionTypes.SINGLE,
             order=1,
             is_active=True,
-            is_required=True,
+            status=Question.QuestionStatus.REQUIRED,
         )
 
         self.question_2 = Question.objects.create(
@@ -34,7 +34,7 @@ class QuestionnaireTest(TestCase):
             question_type=Question.QuestionTypes.MULTIPLE,
             order=6,
             is_active=True,
-            is_required=False,
+            status=Question.QuestionStatus.ADDITIONAL,
         )
 
         self.option_1 = Option.objects.create(
