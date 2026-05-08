@@ -52,6 +52,9 @@ class DirectionView(View):
     def get(self, request):
         option_ids = request.session.get("selected_options", [])
 
+        if not isinstance(option_ids, list):
+            option_ids = []
+
         service = DirectionViewService(request, option_ids)
         redirect_response, direction_data, should_render = service.process_service()
 

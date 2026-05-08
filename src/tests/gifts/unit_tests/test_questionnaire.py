@@ -1,9 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from rest_framework.exceptions import ValidationError
-
 from gifts.models import Question, Option, Tag
-from gifts.services.question_view_services import QuestionViewService
 
 
 class QuestionnaireTest(TestCase):
