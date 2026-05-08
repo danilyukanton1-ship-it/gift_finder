@@ -18,6 +18,10 @@ class Question(BaseModel):
         MULTIPLE = "multiple"
         TEXT = "text"
 
+    class QuestionStatus(models.TextChoices):
+        REQUIRED = "required"
+        ADDITIONAL = "additional"
+
     text = models.TextField(max_length=500, verbose_name="Question")
     description = models.TextField(
         max_length=500,
@@ -32,6 +36,12 @@ class Question(BaseModel):
         verbose_name="Question Type",
     )
     order = models.IntegerField(default=0, verbose_name="Order")
+    status = models.CharField(
+        max_length=10,
+        choices=QuestionStatus.choices,
+        default=QuestionStatus.REQUIRED,
+        verbose_name="Question Status",
+    )
     is_active = models.BooleanField(default=True, verbose_name="Active")
     is_required = models.BooleanField(default=True, verbose_name="Required")
     priority = models.IntegerField(
