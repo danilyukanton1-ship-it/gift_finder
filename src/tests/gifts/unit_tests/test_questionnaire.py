@@ -112,10 +112,20 @@ class QuestionnaireTest(TestCase):
 
     # POST tests
     def test_post_valid_data_redirect(self):
-        """Check if POST method redirects with correct data"""
+        """Check if POST method redirects with correct data and additional questions"""
         post_data = {
             f"question_{self.question_1.id}": self.option_1.id,
             f"question_{self.question_2.id}": self.option_3.id,
+        }
+
+        response = self.client.post(self.path, data=post_data)
+
+        self.assertRedirects(response, reverse("gifts:directions"))
+
+    def test_post_valid_data_redirect_without_additional_questions(self):
+        """Check if POST method redirects with correct data and without additional questions"""
+        post_data = {
+            f"question_{self.question_1.id}": self.option_2.id,
         }
 
         response = self.client.post(self.path, data=post_data)
@@ -137,7 +147,7 @@ class QuestionnaireTest(TestCase):
         self.assertEqual(len(selected_options), 2)
 
     def test_post_with_not_full_data(self):
-        """Check if POST with partial data redirects (doesn't validate)"""
+        """Check if POST with partial data returns ValidationError"""
         post_data = {
             f"question_{self.question_1.id}": self.option_1.id,
         }
@@ -148,12 +158,11 @@ class QuestionnaireTest(TestCase):
 
     def test_post_with_empty_data(self):
         """Check if POST with empty data redirects"""
-        response = self.client.post(self.path, {}, follow=False)
+        response = self.client.post(self.path, {})
 
         self.assertEqual(response.status_code, 400)
 
-        session = self.client.session
-        self.assertNotIn("selected_options", session)
+        self.assertNotIn("selected_options", self.client.session)
 
     # full integration tests
 
