@@ -70,6 +70,10 @@ class ProductView(View):
     def get(self, request, direction_id):
         all_products = request.session.get("all_products", [])
 
+        if not all_products:
+            messages.warning(request, "No products found.")
+            return redirect("gifts:directions")
+
         direction_data = all_products.get(str(direction_id), {})
         products = direction_data.get("products", [])
 
