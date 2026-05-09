@@ -100,6 +100,9 @@ class CartView(LoginRequiredMixin, View):
             product=product,
             defaults={"quantity": 1, "is_purchased": False},
         )
+        if cart_item.is_purchased:
+            messages.warning(request, f"{product.name} purchased")
+            return redirect(reverse("accounts:cart"))
 
         if not created:
             cart_item.quantity += 1
