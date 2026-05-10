@@ -2,13 +2,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView
 
-from .models import Question, Tag, Product
+from .models import Tag, Product
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
-from accounts.models import SearchHistory, Cart
-from django.contrib.auth.decorators import login_required
+from accounts.models import Cart
 from django.urls import reverse
 from gifts.services.question_view_services import (
     QuestionViewService,
@@ -33,6 +32,16 @@ class QuestionnaireView(View):
     def post(self, request):
         questions = QuestionViewService.get_active_questions()
         selected_options = QuestionViewService.extract_selected(request.POST, questions)
+        is_valid = QuestionViewService.validate_answer(selected_options, questions)
+
+        if not is_valid:
+            context = {
+                "questions": questions,
+                "error": "Please answer all the required questions. If you choose a gift for a child, answer all the questions. If not, answer all the required questions.",
+                "selected_options": selected_options,
+            }
+            return render(request, self.template_name, context, status=400)
+
         request.session["selected_options"] = selected_options
         return redirect("gifts:directions")
 
@@ -43,6 +52,9 @@ class DirectionView(View):
     def get(self, request):
         option_ids = request.session.get("selected_options", [])
 
+        if not isinstance(option_ids, list):
+            option_ids = []
+
         service = DirectionViewService(request, option_ids)
         redirect_response, direction_data, should_render = service.process_service()
 
@@ -51,11 +63,16 @@ class DirectionView(View):
 
         return render(request, self.template_name, {"directions_data": direction_data})
 
+
 class ProductView(View):
     template_name = "gifts/products.html"
 
     def get(self, request, direction_id):
         all_products = request.session.get("all_products", [])
+
+        if not all_products:
+            messages.warning(request, "No products found.")
+            return redirect("gifts:directions")
 
         direction_data = all_products.get(str(direction_id), {})
         products = direction_data.get("products", [])
@@ -83,15 +100,21 @@ class CartView(LoginRequiredMixin, View):
             product=product,
             defaults={"quantity": 1, "is_purchased": False},
         )
+        if cart_item.is_purchased:
+            messages.warning(request, f"{product.name} purchased")
+            return redirect(reverse("accounts:cart"))
 
         if not created:
             cart_item.quantity += 1
             cart_item.save()
-            messages.success(request, f'{product.name} quantity increased to {cart_item.quantity}')
+            messages.success(
+                request, f"{product.name} quantity increased to {cart_item.quantity}"
+            )
         else:
-            messages.success(request, f'{product.name} added to cart')
+            messages.success(request, f"{product.name} added to cart")
 
         return redirect(reverse("accounts:cart"))
+
 
 @staff_member_required
 def get_tags_by_question(request):

@@ -22,7 +22,7 @@
             {% for item in cart_items %}
             <tr>
                 <td>{{ item.product.name }}</td>
-                <td>{{ item.product.price }} {{ item.product.currency }}</td>
+                <td>{{ item.product.price|floatformat:2 }} {{ item.product.currency }}</td>
                 <td>
                     <form method="post" action="{% url 'accounts:update_cart' item.id %}" class="d-flex gap-2">
                         {% csrf_token %}
@@ -31,7 +31,13 @@
                         <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
                     </form>
                 </td>
-                <td>{{ item.product.price|floatformat:2 }} {{ item.product.currency }}</td>
+                <td>
+                    {% if item.item_total %}
+                        {{ item.item_total|floatformat:2 }} {{ item.product.currency }}
+                    {% else %}
+                        {{ item.product.price|floatformat:2 }} × {{ item.quantity }}
+                    {% endif %}
+                </td>
                 <td>
                     <form method="post" action="{% url 'accounts:delete_from_cart' item.id %}">
                         {% csrf_token %}
@@ -44,9 +50,14 @@
             <tfoot>
             <tr class="table-active">
                 <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                <td><strong>{{ total|floatformat:2 }} {{ cart_items.0.product.currency|default:"BYN" }}</strong></td>
-                <td></td>
-            </tr>
+                <td colspan="2">
+                    <strong>{{ total|floatformat:2 }}
+                    {% with first_item=cart_items|first %}
+                        {{ first_item.product.currency|default:"BYN" }}
+                    {% endwith %}
+                    </strong>
+                </td>
+             </tr>
             </tfoot>
         </table>
     </div>
