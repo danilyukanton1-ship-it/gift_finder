@@ -54,7 +54,8 @@ class UpdateCartView(LoginRequiredMixin, View):
 class DeleteFromCartView(LoginRequiredMixin, View):
 
     def post(self, request, item_id):
-        deleted, _ = Cart.objects.filter(id=item_id, user=request.user).delete()
+        item = get_object_or_404(Cart, id=item_id, user=request.user)
+        deleted, _ = item.delete()
         if deleted:
             messages.success(request, "Item removed from cart.")
         else:
