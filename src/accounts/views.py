@@ -38,7 +38,10 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 class UpdateCartView(LoginRequiredMixin, View):
 
     def post(self, request, item_id):
-        quantity = int(request.POST.get("quantity", 1))
+        try:
+            quantity = int(request.POST.get("quantity", 1))
+        except (ValueError, TypeError):
+            quantity = 1
         item = get_object_or_404(Cart, id=item_id, user=request.user)
         if quantity > 0:
             item.quantity = quantity
