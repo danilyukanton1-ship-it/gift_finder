@@ -1,16 +1,24 @@
+from django.db.models import QuerySet
+from django.http import QueryDict
+
 from gifts.models import Question, Option
+from typing import List, Set, Union, Dict, Any, Optional
 
 
 class QuestionViewService:
     """For question related operations in views"""
 
     @staticmethod
-    def get_active_questions():
+    def get_active_questions() -> QuerySet[Question]:
+        """returns active questions"""
         question = Question.objects.filter(is_active=True).order_by("order")
         return question
 
     @staticmethod
-    def extract_selected(request_data, questions):
+    def extract_selected(
+        request_data: Union[QueryDict, Dict[str, Any]], questions: QuerySet[Question]
+    ):
+        """extracts selected options from questions"""
         selected_options = []
 
         for question in questions:
@@ -27,7 +35,8 @@ class QuestionViewService:
         return selected_options
 
     @staticmethod
-    def has_child_tag(selected_options):
+    def has_child_tag(selected_options: List[str]) -> bool:
+        """checks if there is any child tag in selected_options"""
         if not selected_options:
             return False
         return Option.objects.filter(
@@ -35,8 +44,8 @@ class QuestionViewService:
         ).exists()
 
     @staticmethod
-    def get_mandatory_questions(selected_options):
-
+    def get_mandatory_questions(selected_options: List[str]) -> Set[int]:
+        """returns set of mandatory questions"""
         if QuestionViewService.has_child_tag(selected_options):
             return set(
                 Question.objects.filter(is_active=True).values_list("id", flat=True)
@@ -49,7 +58,10 @@ class QuestionViewService:
             )
 
     @staticmethod
-    def validate_answer(selected_options, questions):
+    def validate_answer(
+        selected_options: List[str], questions: QuerySet[Question]
+    ) -> bool:
+        """checks if all the mandatory questions were answered"""
         mandatory_questions = QuestionViewService.get_mandatory_questions(
             selected_options
         )
