@@ -4,15 +4,15 @@ from django.contrib import messages
 from django.views import View
 from django.views.generic import TemplateView
 
-from .models import Tag, Product
+from gifts.models import Tag, Product
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
 from accounts.models import Cart
 from django.urls import reverse
-from gifts.services.question_view_services import (
+from gifts.services.questions import (
     QuestionViewService,
 )
-from gifts.services.direction_view_services import (
+from gifts.services.directions import (
     DirectionViewService,
 )
 

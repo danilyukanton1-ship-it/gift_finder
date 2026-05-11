@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from gifts.models import Direction, Question, Option, Tag
 from django.urls import reverse
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 
 class DirectionViewTest(TestCase):
