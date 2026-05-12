@@ -10,4 +10,5 @@ django-debug-toolbar==6.3.0
 djangorestframework-stubs==3.16.9
 djangorestframework_simplejwt==5.5.1
 django-redis==6.0.0
-pyjwt
+drf-social-oauth2==3.4.1
+PyJWT==2.12.1
