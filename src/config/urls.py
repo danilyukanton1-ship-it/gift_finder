@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -35,6 +35,11 @@ jwt_urlpatterns = [
     path("api/logout/", LogoutView.as_view(), name="logout"),
 ]
 
+# api Social auth
+social_auth_urlpatterns = [
+    re_path("api/social-auth/", include("drf_social_oauth2.urls", namespace="social")),
+]
+
 
 # drf-spectacular urls
 drf_spectacular_urlpatterns = [
@@ -68,6 +73,7 @@ urlpatterns = (
     ]
     + drf_spectacular_urlpatterns
     + jwt_urlpatterns
+    + social_auth_urlpatterns
 )
 
 if settings.DEBUG:

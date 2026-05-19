@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     "django_filters",
     "debug_toolbar",
     "rest_framework_simplejwt",
+    "oauth2_provider",
+    "social_django",
+    "drf_social_oauth2",
     # my App
     "gifts.apps.GiftsConfig",
     "accounts.apps.AccountsConfig",
@@ -70,6 +73,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -136,10 +141,18 @@ MEDIA_URL = "/media/"
 STATIC_ROOT = BASE_DIR / "static"
 STATIC_URL = "/static/"
 
+AUTHENTICATION_BACKENDS = (
+    "social_core.backends.github.GithubOAuth2",
+    "drf_social_oauth2.backends.DjangoOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+)
+
 # Rest_framework settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+        "drf_social_oauth2.authentication.SocialAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
@@ -175,3 +188,9 @@ CACHES = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
+SOCIAL_AUTH_GITHUB_KEY = env("SOCIAL_AUTH_GITHUB_KEY")
+SOCIAL_AUTH_GITHUB_SECRET = env("SOCIAL_AUTH_GITHUB_SECRET")
+SOCIAL_AUTH_GITHUB_SCOPE = ["user:email"]
+
+ACTIVATE_JWT = True
