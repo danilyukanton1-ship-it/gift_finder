@@ -1,22 +1,25 @@
+from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import include, path, re_path
 from drf_spectacular.views import (
     SpectacularAPIView,
-    SpectacularSwaggerView,
     SpectacularRedocView,
+    SpectacularSwaggerView,
 )
-from accounts.v1.views import LogoutView
+
+if settings.DEBUG:
+    import debug_toolbar
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
 )
-import debug_toolbar
-from gifts.v1.router import router as gift_router
-from accounts.v1.router import router as account_router
-from config import settings
+
+from accounts.api.v1.router import router as account_router
+from accounts.api.v1.views import LogoutView
 from custom_router import EnhancedAPIRouter
-from gifts.v1.views import AnswerSubmitAPIView
+from gifts.api.v1.router import router as gift_router
+from gifts.api.v1.views import AnswerSubmitAPIView
 
 router = EnhancedAPIRouter()
 # api router

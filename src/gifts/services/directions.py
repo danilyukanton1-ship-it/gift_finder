@@ -1,24 +1,26 @@
+from typing import Any
+
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import redirect
-from typing import Optional, Any, Dict, List, Tuple
+
 from accounts.models import SearchHistory
 from gifts.services.gift_search import (
+    DirectionData,
     GiftSearchService,
     serialize_products_by_direction,
-    DirectionData,
 )
 
 
 class DirectionViewService:
 
-    def __init__(self, request: HttpRequest, option_ids: List[int]) -> None:
+    def __init__(self, request: HttpRequest, option_ids: list[int]) -> None:
         self.request = request
         self.option_ids = option_ids
         self._result = None
         self._serializable_result = None
 
-    def validate_options(self) -> Optional[HttpResponseRedirect]:
+    def validate_options(self) -> HttpResponseRedirect | None:
         """validation of chosen options, returns HttpResponseRedirect if not option_ids"""
         if not self.option_ids:
             messages.warning(self.request, "No options selected")
@@ -31,13 +33,13 @@ class DirectionViewService:
             history = SearchHistory.objects.create(user=self.request.user)
             history.options.set(self.option_ids)
 
-    def get_recommendations(self) -> Dict[int, DirectionData]:
+    def get_recommendations(self) -> dict[int, DirectionData]:
         """Get recommendations from using GiftSearchService"""
         engine = GiftSearchService(self.option_ids)
         self._result = engine.get_result()
         return self._result
 
-    def result_to_serializable(self) -> Dict[int, DirectionData]:
+    def result_to_serializable(self) -> dict[int, DirectionData]:
         """convert result into serializable dictionary"""
         if self._result is None:
             self._result = self.get_recommendations()
@@ -51,7 +53,7 @@ class DirectionViewService:
             }
         return serializable_result
 
-    def serialize_and_store_in_session(self) -> Dict[int, dict[str, Any]]:
+    def serialize_and_store_in_session(self) -> dict[int, dict[str, Any]]:
         """serialize result and save into session"""
         if self._serializable_result is None:
             self._serializable_result = self.result_to_serializable()
@@ -59,7 +61,7 @@ class DirectionViewService:
         self.request.session["all_products"] = serialized
         return serialized
 
-    def prepare_directions_data(self) -> List[Dict[str, Any]]:
+    def prepare_directions_data(self) -> list[dict[str, Any]]:
         """prepare directions data for showing in template"""
         directions_data = []
         for direction_id, data in self._result.items():
@@ -76,7 +78,7 @@ class DirectionViewService:
 
     def process_service(
         self,
-    ) -> Tuple[Optional[HttpResponseRedirect], Optional[List[Dict[str, Any]]], bool]:
+    ) -> tuple[HttpResponseRedirect | None, list[dict[str, Any]] | None, bool]:
         """
         Returns:
             Tuple[HttpResponseRedirect | None, List[Dict] | None, bool]:

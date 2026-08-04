@@ -1,8 +1,9 @@
+from typing import Any
+
 from django.db.models import QuerySet
 from django.http import QueryDict
 
-from gifts.models import Question, Option
-from typing import List, Set, Union, Dict, Any, Optional
+from gifts.models import Option, Question
 
 
 class QuestionViewService:
@@ -16,7 +17,7 @@ class QuestionViewService:
 
     @staticmethod
     def extract_selected(
-        request_data: Union[QueryDict, Dict[str, Any]], questions: QuerySet[Question]
+        request_data: QueryDict | dict[str, Any], questions: QuerySet[Question]
     ):
         """extracts selected options from questions"""
         selected_options = []
@@ -35,7 +36,7 @@ class QuestionViewService:
         return selected_options
 
     @staticmethod
-    def has_child_tag(selected_options: List[str]) -> bool:
+    def has_child_tag(selected_options: list[str]) -> bool:
         """checks if there is any child tag in selected_options"""
         if not selected_options:
             return False
@@ -44,7 +45,7 @@ class QuestionViewService:
         ).exists()
 
     @staticmethod
-    def get_mandatory_questions(selected_options: List[str]) -> Set[int]:
+    def get_mandatory_questions(selected_options: list[str]) -> set[int]:
         """returns set of mandatory questions"""
         if QuestionViewService.has_child_tag(selected_options):
             return set(
@@ -59,7 +60,7 @@ class QuestionViewService:
 
     @staticmethod
     def validate_answer(
-        selected_options: List[str], questions: QuerySet[Question]
+        selected_options: list[str], questions: QuerySet[Question]
     ) -> bool:
         """checks if all the mandatory questions were answered"""
         mandatory_questions = QuestionViewService.get_mandatory_questions(

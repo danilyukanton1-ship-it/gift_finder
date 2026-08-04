@@ -1,10 +1,11 @@
 import json
 import logging
+
 from django.core.cache import cache
 from django.http import JsonResponse
-from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.deprecation import MiddlewareMixin
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 logger = logging.getLogger(__name__)
 

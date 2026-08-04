@@ -8,10 +8,10 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from accounts.models import Cart
-from gifts.services.direction_view_services import (
+from gifts.services.directions import (
     DirectionViewService,
 )
-from gifts.services.question_view_services import (
+from gifts.services.questions import (
     QuestionViewService,
 )
 
