@@ -1,5 +1,3 @@
-from xxlimited_35 import Null
-
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from gifts.models import Question
