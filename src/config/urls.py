@@ -1,25 +1,22 @@
-from django.conf import settings
-
-if settings.DEBUG:
-    import debug_toolbar
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path, include, re_path
 from drf_spectacular.views import (
     SpectacularAPIView,
-    SpectacularRedocView,
     SpectacularSwaggerView,
+    SpectacularRedocView,
 )
+from accounts.v1.views import LogoutView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
 )
-
-from accounts.api.v1.router import router as account_router
-from accounts.api.v1.views import LogoutView
+import debug_toolbar
+from gifts.v1.router import router as gift_router
+from accounts.v1.router import router as account_router
+from config import settings
 from custom_router import EnhancedAPIRouter
-from gifts.api.v1.router import router as gift_router
-from gifts.api.v1.views import AnswerSubmitAPIView
+from gifts.v1.views import AnswerSubmitAPIView
 
 router = EnhancedAPIRouter()
 # api router
@@ -36,6 +33,11 @@ jwt_urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("api/logout/", LogoutView.as_view(), name="logout"),
+]
+
+# api Social auth
+social_auth_urlpatterns = [
+    re_path("api/social-auth/", include("drf_social_oauth2.urls", namespace="social")),
 ]
 
 
@@ -71,6 +73,7 @@ urlpatterns = (
     ]
     + drf_spectacular_urlpatterns
     + jwt_urlpatterns
+    + social_auth_urlpatterns
 )
 
 if settings.DEBUG:
