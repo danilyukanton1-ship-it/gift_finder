@@ -1,9 +1,10 @@
-from django.contrib import admin
-from django.utils.safestring import mark_safe
-from django.urls import reverse
-from .models import Question, Tag, Option, Direction, Product
-from django.contrib.admin import SimpleListFilter
 from django import forms
+from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+
+from .models import Direction, Option, Product, Question, Tag
 
 
 # filters and other logic

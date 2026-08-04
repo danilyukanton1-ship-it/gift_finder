@@ -1,6 +1,7 @@
-from django.test import TestCase, Client
+from django.test import Client, TestCase
 from django.urls import reverse
-from gifts.models import Question, Option, Tag
+
+from gifts.models import Option, Question, Tag
 
 
 class QuestionnaireTest(TestCase):

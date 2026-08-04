@@ -1,19 +1,22 @@
 from pyexpat.errors import messages
+
+from django.contrib import messages
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib import messages
-from django.views.generic import TemplateView
-from .models import Cart
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
+from django.views.generic import TemplateView
+
 from accounts.selectors import (
     cart_items_get,
     cart_items_get_with_item_total,
     cart_total_price,
-    search_history_get,
     saved_search_get,
+    search_history_get,
 )
+
+from .models import Cart
 
 
 class RegisterView(View):

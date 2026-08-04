@@ -29,7 +29,7 @@ class DirectionViewService:
             engine = GiftSearchService(self.option_ids)
             self._result = engine.get_result()
             # Отладка
-            print(f"=== DEBUG ===")
+            print("=== DEBUG ===")
             print(f"option_ids: {self.option_ids}")
             print(f"result keys: {list(self._result.keys())}")
             print(f"result data: {self._result}")

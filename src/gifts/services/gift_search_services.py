@@ -1,35 +1,36 @@
-from gifts.models import Tag, Product, Direction
+from typing import Any, TypedDict
+
+from gifts.models import Direction, Product, Tag
 from gifts.selectors import (
-    options_fetch,
-    question_get_by_order,
-    products_all_with_tags_and_directions,
     all_questions,
+    options_fetch,
+    products_all_with_tags_and_directions,
+    question_get_by_order,
 )
-from typing import Dict, Set, List, Tuple, TypedDict, Any
 
 
 class ProductData(TypedDict):
     product: Product
     normalized_score: float
-    matched_tags: List[str]
+    matched_tags: list[str]
 
 
 class DirectionData(TypedDict):
     direction: Direction
-    products: List[ProductData]
+    products: list[ProductData]
     product_count: int
-    top_products: List[ProductData]
+    top_products: list[ProductData]
 
 
 class UserTagService:
     """Gets list of options the user have chosen"""
 
-    def __init__(self, options: List[int]) -> None:
+    def __init__(self, options: list[int]) -> None:
         self.options = options_fetch(options)
         self.tags_by_questions_id = self._build_tags_by_question_id()
         self.all_questions = all_questions()
 
-    def _build_tags_by_question_id(self) -> Dict[int, Set[Tag]]:
+    def _build_tags_by_question_id(self) -> dict[int, set[Tag]]:
         """Build mapping from question to set of tags"""
         tags_from_options = {}
 
@@ -43,13 +44,9 @@ class UserTagService:
 
         return tags_from_options
 
-    def get_tags(self, question_id: int) -> Set[Tag]:
+    def get_tags(self, question_id: int) -> set[Tag]:
         """Get user selected tags for a specific question"""
         return self.tags_by_questions_id.get(question_id, set())
-
-    def get_all_questions_ids(self) -> List[int]:
-        """Get all questions that user answered"""
-        return list(self.tags_by_questions_id.keys())
 
     def calculate_max_score(self) -> float:
         """Calculate max possible score that product can receive if matching all the tags"""
@@ -61,7 +58,7 @@ class UserTagService:
             max_score += len(tags) * priority
         return max_score
 
-    def get_all_user_tags(self) -> Set[Tag]:
+    def get_all_user_tags(self) -> set[Tag]:
         """Get all tags selected by user across all questions"""
         all_tags = set()
         for tags in self.tags_by_questions_id.values():
@@ -74,7 +71,7 @@ class ProductScoreService:
     def __init__(self, user_tags_service: UserTagService) -> None:
         self._user_tag_service = user_tags_service
 
-    def calculate_product_score(self, product_tags: List[Tag]) -> float:
+    def calculate_product_score(self, product_tags: list[Tag]) -> float:
         """Calculate product score based on weighted tag matches"""
         product_score = 0
 
@@ -91,7 +88,7 @@ class ProductScoreService:
             counted_tags.update(matched_tags)
         return product_score
 
-    def calculate_normalized_score(self, product_tags: List[Tag]) -> float:
+    def calculate_normalized_score(self, product_tags: list[Tag]) -> float:
         """Calculate normalized score (0-100) for a product"""
         product_score = self.calculate_product_score(product_tags)
         max_score = self._user_tag_service.calculate_max_score()
@@ -115,26 +112,26 @@ class ProductFilterService:
         self.question_order_6 = question_order_6
         self.score_calculator = ProductScoreService(user_tags_service)
 
-    def validate_by_recipient(self, product_tags: List[Tag]) -> bool:
+    def validate_by_recipient(self, product_tags: list[Tag]) -> bool:
         """Checks if product has tags matching the recipient tags of a user"""
         user_tags = self._user_tags_service.get_tags(self.question_order_1)
 
         return bool(user_tags & set(product_tags))
 
-    def validate_by_hobby(self, product_tags: List[Tag]) -> bool:
+    def validate_by_hobby(self, product_tags: list[Tag]) -> bool:
         """Checks if product has tags matching the hobby tags of a user"""
         user_tags = self._user_tags_service.get_tags(self.question_order_6)
 
         return bool(user_tags & set(product_tags))
 
-    def score_validation(self, product_tags: List[Tag]) -> bool:
+    def score_validation(self, product_tags: list[Tag]) -> bool:
         """Checks if product's normalized score matches NEEDED score"""
         return (
             self.score_calculator.calculate_normalized_score(product_tags)
             > self.SCORE_NEEDED
         )
 
-    def evaluate_product(self, product_tags: List[Tag]) -> Tuple[bool, float]:
+    def evaluate_product(self, product_tags: list[Tag]) -> tuple[bool, float]:
         """
         Checks if product should be kept
         return: tuple(should_keep: bool, normalized_score: float)
@@ -152,11 +149,11 @@ class ProductFilterService:
 
 class ProductGroupService:
 
-    def __init__(self, collected_products: List[ProductData]) -> None:
+    def __init__(self, collected_products: list[ProductData]) -> None:
         self.collected_products = collected_products
         self.directions_grouped = self._group_by_direction()
 
-    def _group_by_direction(self) -> Dict[int, DirectionData]:
+    def _group_by_direction(self) -> dict[int, DirectionData]:
         """Group products by their direction"""
         directions_grouped = {}
         for product in self.collected_products:
@@ -188,7 +185,7 @@ class ProductGroupService:
             data["top_products"] = data["products"][:limit]
         return self
 
-    def get_grouped_result(self) -> Dict[int, DirectionData]:
+    def get_grouped_result(self) -> dict[int, DirectionData]:
         """Return products grouped with top selections"""
         return self.directions_grouped
 
@@ -197,7 +194,7 @@ class GiftSearchService:
 
     REQUIRED_QUESTION_ORDERS = [1, 4, 5, 6, 7, 8, 9, 10]
 
-    def __init__(self, options_ids: List[int]) -> None:
+    def __init__(self, options_ids: list[int]) -> None:
         self.question_order_1 = question_get_by_order(order=1)
         self.question_order_6 = question_get_by_order(order=6)
         self.all_products = products_all_with_tags_and_directions()
@@ -222,13 +219,13 @@ class GiftSearchService:
                 return False
         return True
 
-    def _get_matched_tags(self, product_tags: List[Tag]) -> List[str]:
+    def _get_matched_tags(self, product_tags: list[Tag]) -> list[str]:
         """Get names of tags matching the product_tags"""
         all_user_tags = self._user_tags_service.get_all_user_tags()
         matched_tags = all_user_tags.intersection(product_tags)
         return [tag.name for tag in matched_tags]
 
-    def _collect_products(self) -> List[ProductData]:
+    def _collect_products(self) -> list[ProductData]:
         """Collecting products with all validators, filters, and scoring calculations
         Main orchestrator def
         """
@@ -247,14 +244,14 @@ class GiftSearchService:
             )
         return collected_products
 
-    def get_result(self) -> Dict[int, DirectionData]:
+    def get_result(self) -> dict[int, DirectionData]:
         """return final results grouped by direction"""
         return self.directions_grouped
 
 
 def serialize_products_by_direction(
-    products_by_direction: Dict[int, DirectionData],
-) -> Dict[int, Dict[str, Any]]:
+    products_by_direction: dict[int, DirectionData],
+) -> dict[int, dict[str, Any]]:
     """
     :param products_by_direction:
     :return: serializable list of dirs of products

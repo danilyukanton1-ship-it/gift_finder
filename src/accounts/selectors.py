@@ -1,6 +1,8 @@
-from accounts.models import Cart, SearchHistory, SavedSearch
-from django.db.models import Sum, F
 import decimal
+
+from django.db.models import F, Sum
+
+from accounts.models import Cart, SavedSearch, SearchHistory
 
 
 def cart_items_get_with_item_total(request):

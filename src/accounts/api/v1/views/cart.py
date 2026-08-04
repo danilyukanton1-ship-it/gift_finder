@@ -1,8 +1,8 @@
 from drf_spectacular.utils import extend_schema
-from rest_framework import viewsets, permissions
+from rest_framework import permissions, viewsets
 
+from accounts.api.v1.serializers import CartSerializer
 from accounts.models import Cart
-from accounts.v1.serializers import CartSerializer
 from base.pagination import CustomPagination
 
 

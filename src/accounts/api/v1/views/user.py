@@ -1,11 +1,10 @@
-from http.client import responses
 
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
-from rest_framework import status
-from accounts.v1.serializers import UserSerializer
-from rest_framework import viewsets, permissions
+
+from accounts.api.v1.serializers import UserSerializer
 
 user = get_user_model()
 

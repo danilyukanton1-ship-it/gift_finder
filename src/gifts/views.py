@@ -1,20 +1,21 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views import View
 from django.views.generic import TemplateView
 
-from .models import Tag, Product
-from django.contrib.admin.views.decorators import staff_member_required
-from django.http import JsonResponse
 from accounts.models import Cart
-from django.urls import reverse
-from gifts.services.question_view_services import (
-    QuestionViewService,
-)
 from gifts.services.direction_view_services import (
     DirectionViewService,
 )
+from gifts.services.question_view_services import (
+    QuestionViewService,
+)
+
+from .models import Product, Tag
 
 
 class IndexView(TemplateView):

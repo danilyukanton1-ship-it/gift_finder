@@ -1,7 +1,9 @@
 from django.db import models
+
+from base.models import BaseModel
+
 from .question import Question
 from .tag import Tag
-from base.models import BaseModel
 
 
 class Option(BaseModel):

@@ -1,9 +1,9 @@
 from rest_framework.routers import DefaultRouter
 
-from accounts.v1.views import (
-    SearchHistoryViewSet,
+from accounts.api.v1.views import (
     CartViewSet,
     SavedSearchViewSet,
+    SearchHistoryViewSet,
     UserViewSet,
 )
 

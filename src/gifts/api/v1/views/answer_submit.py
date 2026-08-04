@@ -1,13 +1,15 @@
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from gifts.api.v1.serializers import AnswerSubmitSerializer
 from gifts.services import GiftSearchService, serialize_products_by_direction
-from gifts.v1.serializers import AnswerSubmitSerializer
-from rest_framework import status
 
 
 @extend_schema(tags=["Answer of a user"])
 class AnswerSubmitAPIView(APIView):
+
     @extend_schema(responses={200: AnswerSubmitSerializer})
     def post(self, request, *args, **kwargs):
         serializer = AnswerSubmitSerializer(data=request.data)

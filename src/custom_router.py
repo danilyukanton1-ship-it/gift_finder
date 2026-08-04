@@ -4,7 +4,7 @@ from typing import Any
 from django.urls import NoReverseMatch, include, re_path
 from django.urls import reverse as django_reverse
 from rest_framework import reverse
-from rest_framework.routers import DefaultRouter, SimpleRouter, APIRootView
+from rest_framework.routers import APIRootView, DefaultRouter, SimpleRouter
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSetMixin
 
@@ -171,7 +171,7 @@ class EnhancedAPIRouter(DefaultRouter):
             return True
 
         # Для экземпляров проверяем наличие метода as_view
-        return hasattr(obj, "as_view") and callable(getattr(obj, "as_view"))
+        return hasattr(obj, "as_view") and callable(obj.as_view)
 
     def _is_nested_router(self, obj: Any) -> bool:
         """

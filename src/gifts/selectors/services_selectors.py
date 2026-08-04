@@ -1,4 +1,4 @@
-from gifts.models import Option, Question, Product
+from gifts.models import Option, Product, Question
 
 
 def options_fetch(options_ids):

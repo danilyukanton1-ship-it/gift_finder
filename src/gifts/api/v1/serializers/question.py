@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from gifts.models import Question, Option
+from gifts.models import Option, Question
 
 
 class TagsQuestionSerializer(serializers.Serializer):

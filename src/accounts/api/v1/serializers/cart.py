@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from gifts.models import Product
+
 from accounts.models import Cart
+from gifts.models import Product
 
 
 class ProductSerializer(serializers.ModelSerializer):

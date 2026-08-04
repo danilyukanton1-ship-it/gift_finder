@@ -1,7 +1,8 @@
-from django.db import models
 from django.contrib.auth.models import User
-from gifts.models import Product
+from django.db import models
+
 from base.models import BaseModel
+from gifts.models import Product
 
 
 class Cart(BaseModel):

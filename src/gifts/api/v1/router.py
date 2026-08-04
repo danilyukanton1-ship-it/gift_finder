@@ -1,6 +1,6 @@
 from rest_framework.routers import DefaultRouter
-from django.urls import path
-from gifts.v1.views import QuestionViewSet, ProductViewSet
+
+from gifts.api.v1.views import ProductViewSet, QuestionViewSet
 
 router = DefaultRouter()
 

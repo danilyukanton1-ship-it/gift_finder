@@ -1,8 +1,9 @@
-from django.test import TestCase, Client
-from django.urls import reverse
 from django.contrib.auth.models import User
-from gifts.models import Product, Direction, Tag
+from django.test import Client, TestCase
+from django.urls import reverse
+
 from accounts.models import Cart
+from gifts.models import Direction, Product, Tag
 
 
 class DeleteFromCartViewTest(TestCase):

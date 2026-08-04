@@ -2,8 +2,8 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from accounts.api.v1.serializers import SavedSearchSerializer
 from accounts.models import SavedSearch
-from accounts.v1.serializers import SavedSearchSerializer
 from base.pagination import CustomPagination
 
 

@@ -1,6 +1,8 @@
 from django.db import models
-from .question import Question
+
 from base.models import BaseModel
+
+from .question import Question
 
 
 class Tag(BaseModel):

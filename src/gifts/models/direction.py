@@ -1,6 +1,8 @@
 from django.db import models
-from .tag import Tag
+
 from base.models import BaseModel
+
+from .tag import Tag
 
 
 class Direction(BaseModel):

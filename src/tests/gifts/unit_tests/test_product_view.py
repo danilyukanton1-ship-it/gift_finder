@@ -1,7 +1,8 @@
-from gifts.models import Product, Direction, Tag
-from django.test import TestCase, Client
+
+from django.test import Client, TestCase
 from django.urls import reverse
-from unittest.mock import patch
+
+from gifts.models import Direction, Product, Tag
 
 
 class ProductViewTest(TestCase):

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import SavedSearch, SearchHistory, Cart
+from .models import Cart, SavedSearch, SearchHistory
 
 
 @admin.register(SavedSearch)

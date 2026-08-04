@@ -1,8 +1,11 @@
-from django.test import TestCase, Client
-from django.urls import reverse
+from datetime import UTC
+
 from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
 from accounts.models import SearchHistory
-from gifts.models import Question, Option, Tag
+from gifts.models import Option, Question, Tag
 
 
 class SearchHistoryViewTest(TestCase):
@@ -84,21 +87,20 @@ class SearchHistoryViewTest(TestCase):
         """search history with ordered by created_at_desc"""
         self._login()
 
-        import time
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         history1 = SearchHistory.objects.create(
             user=self.user,
         )
         history1.options.add(self.option_1)
-        history1.created_at = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        history1.created_at = datetime(2024, 1, 1, tzinfo=UTC)
         history1.save()
 
         history2 = SearchHistory.objects.create(
             user=self.user,
         )
         history2.options.add(self.option_2)
-        history2.created_at = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        history2.created_at = datetime(2025, 1, 1, tzinfo=UTC)
         history2.save()
 
         response = self.client.get(self.path)

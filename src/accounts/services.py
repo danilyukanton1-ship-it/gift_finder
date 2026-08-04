@@ -1,9 +1,8 @@
+from datetime import datetime
 from functools import lru_cache
 
 import jwt
-from django.conf import settings
 from django.core.cache import cache
-from datetime import datetime
 
 
 class JWTBlacklistService:
