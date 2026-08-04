@@ -1,4 +1,5 @@
 from django.conf import settings
+
 if settings.DEBUG:
     import debug_toolbar
 from django.contrib import admin
