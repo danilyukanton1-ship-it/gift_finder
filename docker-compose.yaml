@@ -1,4 +1,30 @@
 services:
+  django:
+    build:
+      context: .
+      target: development
+
+    container_name: gift_finder_django
+
+    working_dir: /opt/pysetup/src
+
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+    volumes:
+      - ./src:/opt/pysetup/src
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   redis:
     image: redis:7
     container_name: gift_finder_redis
@@ -7,6 +33,12 @@ services:
       - "6379:6379"
 
     restart: unless-stopped
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis-insight:
     image: redis/redisinsight:latest
@@ -35,6 +67,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
     restart: unless-stopped
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U django_user -d django_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
