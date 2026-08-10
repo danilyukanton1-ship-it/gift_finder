@@ -23,6 +23,16 @@ jobs:
           --health-timeout=5s
           --health-retries=10
 
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -46,6 +56,11 @@ jobs:
       - name: Django checks
         working-directory: src
         run: poetry run python manage.py check
+
+      - name: Create .env
+        run: |
+          cp .env.example .env
+          sed -i 's|REDIS_URL=.*|REDIS_URL=redis://localhost:6379/1|' .env
 
       - name: Tests
         working-directory: src
