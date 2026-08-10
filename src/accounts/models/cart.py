@@ -25,7 +25,9 @@ class Cart(BaseModel):
         verbose_name = "Cart Item"
         verbose_name_plural = "Cart Items"
         ordering = ("-created_at",)
-        constraints = models.UniqueConstraint(
-            fields=["user", "product", "is_purchased"],
-            name="unique_user_product_active",
+        constraints = (
+            models.UniqueConstraint(
+                fields=["user", "product"],
+                name="unique_user_product",
+            ),
         )
