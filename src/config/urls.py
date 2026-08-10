@@ -59,11 +59,6 @@ drf_spectacular_urlpatterns = [
     ),
 ]
 
-# debug toolbar urls
-debug_toolbar_urlpatterns = [
-    path("__debug__/", include(debug_toolbar.urls)),
-]
-
 # main project urls
 urlpatterns = (
     [
@@ -80,4 +75,8 @@ urlpatterns = (
 )
 
 if settings.DEBUG:
+    # debug toolbar urls
+    debug_toolbar_urlpatterns = [
+        path("__debug__/", include(debug_toolbar.urls)),
+    ]
     urlpatterns += debug_toolbar_urlpatterns
