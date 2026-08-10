@@ -13,7 +13,6 @@ from gifts.services.gift_search import (
 
 
 class DirectionViewService:
-
     def __init__(self, request: HttpRequest, option_ids: list[int]) -> None:
         self.request = request
         self.option_ids = option_ids
@@ -64,7 +63,7 @@ class DirectionViewService:
     def prepare_directions_data(self) -> list[dict[str, Any]]:
         """prepare directions data for showing in template"""
         directions_data = []
-        for direction_id, data in self._result.items():
+        for direction_id, data in self._result.values():
             directions_data.append(
                 {
                     "direction": data["direction"],

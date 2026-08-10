@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import lru_cache
 
 import jwt
@@ -6,11 +6,11 @@ from django.core.cache import cache
 
 
 class JWTBlacklistService:
-
     def __init__(self, cache_client=None):
         self._cache = cache_client or cache
 
-    def _get_jti_from_token(self, token):
+    @staticmethod
+    def _get_jti_from_token(token) -> str | None:
         try:
             payload = jwt.decode(token, options={"verify_signature": False})
             return payload.get("jti")
@@ -24,7 +24,7 @@ class JWTBlacklistService:
 
         exp = self._get_jti_from_token(access_token)
         if exp:
-            ttl = exp - datetime.now().timestamp()
+            ttl = exp - datetime.now(UTC).timestamp()
         else:
             ttl = 300
 

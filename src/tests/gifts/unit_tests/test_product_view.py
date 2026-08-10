@@ -1,4 +1,3 @@
-
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -6,7 +5,6 @@ from gifts.models import Direction, Product, Tag
 
 
 class ProductViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.tag_1 = Tag.objects.create(name="test")

@@ -9,7 +9,7 @@ from base.pagination import CustomPagination
 
 @extend_schema(tags=["Saved Search"])
 class SavedSearchViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     serializer_class = SavedSearchSerializer
     pagination_class = CustomPagination
 

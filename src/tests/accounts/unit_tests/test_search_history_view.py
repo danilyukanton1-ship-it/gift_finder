@@ -9,7 +9,6 @@ from gifts.models import Option, Question, Tag
 
 
 class SearchHistoryViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.question_1 = Question.objects.create(

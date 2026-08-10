@@ -8,9 +8,9 @@ from base.pagination import CustomPagination
 
 @extend_schema(tags=["Search History"])
 class SearchHistoryViewSet(viewsets.ModelViewSet):
-    http_method_names = ["get", "post", "delete"]
+    http_method_names = ("get", "post", "delete")
     serializer_class = SearchHistorySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
 
     def perform_create(self, serializer):

@@ -6,7 +6,6 @@ from gifts.models import Product
 
 
 class Cart(BaseModel):
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart_items")
 
     product = models.ForeignKey(
@@ -26,9 +25,7 @@ class Cart(BaseModel):
         verbose_name = "Cart Item"
         verbose_name_plural = "Cart Items"
         ordering = ("-created_at",)
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user", "product", "is_purchased"],
-                name="unique_user_product_active",
-            )
-        ]
+        constraints = models.UniqueConstraint(
+            fields=["user", "product", "is_purchased"],
+            name="unique_user_product_active",
+        )

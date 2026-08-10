@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
@@ -12,7 +11,7 @@ user = get_user_model()
 @extend_schema(tags=["User"])
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         return user.objects.filter(pk=self.request.user.pk)

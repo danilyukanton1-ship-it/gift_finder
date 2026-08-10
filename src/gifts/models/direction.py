@@ -6,14 +6,13 @@ from .tag import Tag
 
 
 class Direction(BaseModel):
-
     class Meta:
         verbose_name = "Direction"
         verbose_name_plural = "Directions"
 
         db_table = "Directions"
 
-        ordering = ["order", "name"]
+        ordering = ("order", "name")
 
     name = models.CharField(max_length=100, verbose_name="Name of direction")
     description = models.TextField(max_length=500, verbose_name="Description")

@@ -35,3 +35,12 @@ dev = [
     "pre-commit (>=4.6.1,<5.0.0)",
     "pytest (>=9.1.1,<10.0.0)"
 ]
+
+[tool.ruff]
+exclude = [
+    "*/migrations/*.py",
+    "src/custom_router.py",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/config/settings/*.py" = ["F403", "F405"]

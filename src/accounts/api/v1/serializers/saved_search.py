@@ -5,7 +5,6 @@ from gifts.models import Option
 
 
 class OptionsSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Option
         fields = ("id", "text", "order", "is_active", "tags")

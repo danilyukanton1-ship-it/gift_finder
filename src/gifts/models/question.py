@@ -5,14 +5,13 @@ from base.models import BaseModel
 
 
 class Question(BaseModel):
-
     class Meta:
         verbose_name = "Question"
         verbose_name_plural = "Questions"
 
         db_table = "Questions"
 
-        ordering = ["text"]
+        ordering = ("text",)
 
     class QuestionTypes(models.TextChoices):
         SINGLE = "single"

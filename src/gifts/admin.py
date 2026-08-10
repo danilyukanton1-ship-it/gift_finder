@@ -79,18 +79,18 @@ class ProductAdminForm(forms.ModelForm):
 # registration
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ["id", "text", "question_type", "priority", "order", "is_active"]
-    list_filter = ["question_type", "is_active", "priority"]
-    search_fields = ["text"]
-    list_editable = ["priority"]
+    list_display = ("id", "text", "question_type", "priority", "order", "is_active")
+    list_filter = ("question_type", "is_active", "priority")
+    search_fields = ("text",)
+    list_editable = ("priority",)
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ["name", "question_link"]
-    search_fields = ["name"]
-    list_filter = ["question"]
-    autocomplete_fields = ["question"]
+    list_display = ("name", "question_link")
+    search_fields = ("name",)
+    list_filter = ("question",)
+    autocomplete_fields = ("question",)
 
     def question_link(self, obj):
         if obj.question:
@@ -103,28 +103,28 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Option)
 class OptionAdmin(admin.ModelAdmin):
-    list_display = ["id", "text", "question", "order", "is_active"]
-    list_filter = ["question", "is_active"]
-    search_fields = ["text"]
-    filter_horizontal = ["tags"]
+    list_display = ("id", "text", "question", "order", "is_active")
+    list_filter = ("question", "is_active")
+    search_fields = ("text",)
+    filter_horizontal = ("tags",)
 
 
 if not admin.site.is_registered(Direction):
 
     @admin.register(Direction)
     class DirectionAdmin(admin.ModelAdmin):
-        list_display = ["name", "parent", "order"]
-        list_filter = ["parent"]
-        search_fields = ["name"]
-        filter_horizontal = ["tags"]
+        list_display = ("name", "parent", "order")
+        list_filter = ("parent",)
+        search_fields = ("name",)
+        filter_horizontal = ("tags",)
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ["name", "price", "currency", "source", "rating"]
-    list_filter = ["source", "currency", "in_stock"]
-    search_fields = ["name", "description"]
-    readonly_fields = ["created_at", "last_checked"]
+    list_display = ("name", "price", "currency", "source", "rating")
+    list_filter = ("source", "currency", "in_stock")
+    search_fields = ("name", "description")
+    readonly_fields = ("created_at", "last_checked")
 
     def get_form(self, request, obj=None, **kwargs):
         kwargs["form"] = ProductAdminForm

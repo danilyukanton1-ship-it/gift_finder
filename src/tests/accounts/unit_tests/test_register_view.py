@@ -5,7 +5,6 @@ from django.urls import reverse
 
 
 class RegisterViewTest(TestCase):
-
     def setUp(self):
         self.path = reverse("accounts:register")
         self.client = Client()
@@ -21,7 +20,7 @@ class RegisterViewTest(TestCase):
         self.assertIsInstance(response.context["form"], UserCreationForm)
 
     def test_register_post_valid_data_creates_user_and_redirects(self):
-        """After post valid data creates user and redirects to login"""
+        """After post valid data creates user and redirects to log in"""
         user_count_before = User.objects.count()
         data = {
             "username": "test",
@@ -36,7 +35,7 @@ class RegisterViewTest(TestCase):
 
     def test_register_post_data_not_valid(self):
         """After post invalid data"""
-        user_count_before = User.objects.count()
+        User.objects.count()
         data = {
             "username": "test",
             "password1": "StrongPass123",

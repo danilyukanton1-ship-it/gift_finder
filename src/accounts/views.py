@@ -1,6 +1,5 @@
 from pyexpat.errors import messages
 
-from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
@@ -39,8 +38,8 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
 
 class UpdateCartView(LoginRequiredMixin, View):
-
-    def post(self, request, item_id):
+    @staticmethod
+    def post(request, item_id):
         try:
             quantity = int(request.POST.get("quantity", 1))
         except (ValueError, TypeError):
@@ -55,8 +54,8 @@ class UpdateCartView(LoginRequiredMixin, View):
 
 
 class DeleteFromCartView(LoginRequiredMixin, View):
-
-    def post(self, request, item_id):
+    @staticmethod
+    def post(request, item_id):
         item = get_object_or_404(Cart, id=item_id, user=request.user)
         deleted, _ = item.delete()
         if deleted:
@@ -81,8 +80,8 @@ class CartView(LoginRequiredMixin, View):
 
 
 class CartCountView(LoginRequiredMixin, View):
-
-    def get(self, request):
+    @staticmethod
+    def get(request):
         count = cart_items_get(request).count()
         return JsonResponse({"count": count})
 

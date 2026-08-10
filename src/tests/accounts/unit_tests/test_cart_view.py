@@ -69,7 +69,7 @@ class CartViewTest(TestCase):
         """get cart view returns valid data(one item)"""
         self._login()
 
-        cart_item = Cart.objects.create(
+        Cart.objects.create(
             user=self.user,
             product=self.product,
             quantity=1,
@@ -88,13 +88,13 @@ class CartViewTest(TestCase):
         """get cart view returns valid data(multiple items)"""
         self._login()
 
-        cart_item_1 = Cart.objects.create(
+        Cart.objects.create(
             user=self.user,
             product=self.product,
             quantity=1,
             is_purchased=False,
         )
-        cart_item_2 = Cart.objects.create(
+        Cart.objects.create(
             user=self.user,
             product=self.product_2,
             quantity=2,
@@ -112,13 +112,13 @@ class CartViewTest(TestCase):
         """get cart view if purchased product"""
         self._login()
 
-        cart_item = Cart.objects.create(
+        Cart.objects.create(
             user=self.user,
             product=self.product,
             quantity=1,
             is_purchased=True,
         )
-        cart_item_2 = Cart.objects.create(
+        Cart.objects.create(
             user=self.user,
             product=self.product_2,
             quantity=2,

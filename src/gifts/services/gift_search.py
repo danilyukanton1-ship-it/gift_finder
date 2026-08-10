@@ -67,7 +67,6 @@ class UserTagService:
 
 
 class ProductScoreService:
-
     def __init__(self, user_tags_service: UserTagService) -> None:
         self._user_tag_service = user_tags_service
 
@@ -98,7 +97,6 @@ class ProductScoreService:
 
 
 class ProductFilterService:
-
     SCORE_NEEDED = 40
 
     def __init__(
@@ -148,7 +146,6 @@ class ProductFilterService:
 
 
 class ProductGroupService:
-
     def __init__(self, collected_products: list[ProductData]) -> None:
         self.collected_products = collected_products
         self.directions_grouped = self._group_by_direction()
@@ -191,8 +188,7 @@ class ProductGroupService:
 
 
 class GiftSearchService:
-
-    REQUIRED_QUESTION_ORDERS = [1, 4, 5, 6, 7, 8, 9, 10]
+    REQUIRED_QUESTION_ORDERS = (1, 4, 5, 6, 7, 8, 9, 10)
 
     def __init__(self, options_ids: list[int]) -> None:
         self.question_order_1 = question_get_by_order(order=1)

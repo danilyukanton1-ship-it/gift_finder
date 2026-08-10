@@ -7,7 +7,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class LogoutView(APIView):
-
     def post(self, request, *args, **kwargs):
 
         refresh_token = request.data["refresh"]

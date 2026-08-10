@@ -8,12 +8,11 @@ from .tag import Tag
 
 
 class Product(BaseModel):
-
     class Meta:
         verbose_name = "Product"
         verbose_name_plural = "Products"
 
-        ordering = ["-created_at"]
+        ordering = ("-created_at",)
 
         db_table = "Products"
 

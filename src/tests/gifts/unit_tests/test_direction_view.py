@@ -7,7 +7,6 @@ from gifts.models import Direction, Option, Question, Tag
 
 
 class DirectionViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.path = reverse("gifts:directions")
@@ -201,7 +200,7 @@ class DirectionViewTest(TestCase):
 
             options = ["1", "2", "3"]
             self._set_session_options(options)
-            response = self.client.get(self.path)
+            self.client.get(self.path)
             session = self.client.session
             self.assertEqual(session.get("selected_options"), options)
 
@@ -215,7 +214,7 @@ class DirectionViewTest(TestCase):
             mock_instance.process_service.return_value = (fake_redirect, [], True)
             options = ["1", "2", "3"]
             self._set_session_options(options)
-            response = self.client.get(self.path)
+            self.client.get(self.path)
             session = self.client.session
             self.assertEqual(session.get("selected_options"), options)
 
@@ -226,7 +225,7 @@ class DirectionViewTest(TestCase):
             mock_instance.process_service.return_value = (None, [], True)
 
             session = self.client.session
-            session["selected_options"] = "effefef"
+            session["selected_options"] = "fake123"
             session.save()
 
             response = self.client.get(self.path)

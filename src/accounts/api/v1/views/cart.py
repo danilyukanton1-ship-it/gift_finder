@@ -9,7 +9,7 @@ from base.pagination import CustomPagination
 @extend_schema(tags=["Cart"])
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated,)
     pagination_class = CustomPagination
 
     def perform_create(self, serializer):

@@ -6,7 +6,6 @@ from gifts.models import Option
 
 
 class SavedSearch(BaseModel):
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Ruff
+        run: poetry run ruff check .
+
+      - name: Create .env
+        run: cp .env.example .env
+
+      - name: Django checks
+        working-directory: src
+        run: poetry run python manage.py check
+
+      - name: Tests
+        working-directory: src
+        run: poetry run python manage.py test

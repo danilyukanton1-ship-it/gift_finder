@@ -57,7 +57,7 @@ class DirectionView(View):
             option_ids = []
 
         service = DirectionViewService(request, option_ids)
-        redirect_response, direction_data, should_render = service.process_service()
+        redirect_response, direction_data, _ = service.process_service()
 
         if redirect_response:
             return redirect_response
@@ -92,9 +92,10 @@ class ProductView(View):
 
 
 class CartView(LoginRequiredMixin, View):
-    http_method_names = ["post"]
+    http_method_names = ("post",)
 
-    def post(self, request, product_id):
+    @staticmethod
+    def post(request, product_id):
         product = get_object_or_404(Product, id=product_id)
         cart_item, created = Cart.objects.get_or_create(
             user=request.user,

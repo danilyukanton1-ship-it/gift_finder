@@ -6,7 +6,6 @@ from gifts.models import Option
 
 
 class SearchHistory(BaseModel):
-
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="search_histories"
     )
@@ -16,7 +15,7 @@ class SearchHistory(BaseModel):
     )
 
     def __str__(self):
-        return f'{self.user.username} - {self.created_at.strftime("%Y-%m-%d %H:%M")}'
+        return f"{self.user.username} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
 
     class Meta:
         verbose_name = "Search History"

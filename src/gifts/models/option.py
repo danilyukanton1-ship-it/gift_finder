@@ -7,14 +7,13 @@ from .tag import Tag
 
 
 class Option(BaseModel):
-
     class Meta:
         verbose_name = "Option"
         verbose_name_plural = "Options"
 
         db_table = "Options"
 
-        ordering = ["question__order", "order"]
+        ordering = ("question__order", "order")
 
     question = models.ForeignKey(
         Question,

@@ -5,7 +5,6 @@ from gifts.models import Option, Question, Tag
 
 
 class QuestionnaireTest(TestCase):
-
     def setUp(self):
 
         self.path = reverse("gifts:questionnaire")
@@ -67,17 +66,17 @@ class QuestionnaireTest(TestCase):
         self.option_4.tags.add(self.tag7, self.tag8)
 
     def test_get_questionnaire(self):
-        """Check if get_questionnaire returns correct status 200"""
+        """Check get_questionnaire returns correct status 200"""
         response = self.client.get(self.path)
         self.assertEqual(response.status_code, 200)
 
     def test_get_questionnaire_with_template(self):
-        """Check if get_questionnaire uses correct template"""
+        """Check get_questionnaire uses correct template"""
         response = self.client.get(self.path)
         self.assertTemplateUsed(response, "gifts/questionnaire.html")
 
     def test_get_questionnaire_with_active_questions(self):
-        """Check if get_questionnaire returns only active questions"""
+        """Check get_questionnaire returns only active questions"""
         inactive_question = Question.objects.create(
             text="Question 10",
             question_type=Question.QuestionTypes.SINGLE,
@@ -91,14 +90,14 @@ class QuestionnaireTest(TestCase):
         self.assertNotIn(inactive_question, questions)
 
     def test_get_questionnaire_with_right_order(self):
-        """Check if get_questionnaire returns questions ordered correctly"""
+        """Check get_questionnaire returns questions ordered correctly"""
         response = self.client.get(self.path)
         questions = response.context["questions"]
         self.assertEqual(questions[0], self.question_1)
         self.assertEqual(questions[1], self.question_2)
 
     def test_get_questionnaire_with_all_options(self):
-        """Check if get_questionnaire returns questions with their options"""
+        """Check get_questionnaire returns questions with their options"""
         response = self.client.get(self.path)
         questions = response.context["questions"]
 
@@ -110,7 +109,7 @@ class QuestionnaireTest(TestCase):
 
     # POST tests
     def test_post_valid_data_redirect(self):
-        """Check if POST method redirects with correct data and additional questions"""
+        """Check POST method redirects with correct data and additional questions"""
         post_data = {
             f"question_{self.question_1.id}": self.option_1.id,
             f"question_{self.question_2.id}": self.option_3.id,
@@ -136,7 +135,7 @@ class QuestionnaireTest(TestCase):
             f"question_{self.question_1.id}": self.option_1.id,
             f"question_{self.question_2.id}": self.option_3.id,
         }
-        response = self.client.post(self.path, data=post_data)
+        self.client.post(self.path, data=post_data)
 
         session = self.client.session
         selected_options = session.get("selected_options", [])

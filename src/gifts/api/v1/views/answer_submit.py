@@ -9,7 +9,6 @@ from gifts.services import GiftSearchService, serialize_products_by_direction
 
 @extend_schema(tags=["Answer of a user"])
 class AnswerSubmitAPIView(APIView):
-
     @extend_schema(responses={200: AnswerSubmitSerializer})
     def post(self, request, *args, **kwargs):
         serializer = AnswerSubmitSerializer(data=request.data)

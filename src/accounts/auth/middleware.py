@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 class JWTBlacklistMiddleware(MiddlewareMixin):
     """middleware to check if refresh token is blacklisted"""
 
-    def process_request(self, request):
+    @staticmethod
+    def process_request(request):
 
         if request.path == "/api/token/refresh/" and request.method == "POST":
             try:
@@ -37,7 +38,7 @@ class JWTBlacklistMiddleware(MiddlewareMixin):
                 return JsonResponse({"error": "Invalid token"}, status=401)
             except ConnectionError:
                 return JsonResponse({"error": "Connection error"})
-            except Exception as e:
-                logger.error(f"Unexpected error: {e}")
+            except Exception:  # noqa: BLE001
+                logger.error("Unexpected error in authentication middleware")
                 return None
         return None

@@ -8,7 +8,6 @@ from gifts.models import Direction, Product, Tag
 
 
 class CartViewTest(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(
@@ -104,7 +103,7 @@ class CartViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_add_to_cart_returns_405_if_get_method(self):
-        """if get method, returns 405 status code"""
+        """get method, returns 405 status code"""
         self._login()
 
         response = self.client.get(self.path, follow=False)
@@ -177,7 +176,7 @@ class CartViewTest(TestCase):
         session["test_data"] = "should_persist"
         session.save()
 
-        response = self.client.post(self.path, follow=False)
+        self.client.post(self.path, follow=False)
 
         session = self.client.session
         self.assertEqual(session["test_data"], "should_persist")
